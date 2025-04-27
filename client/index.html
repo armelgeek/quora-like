@@ -35,7 +35,6 @@
         window.onload = async () => {
           try {
             await sdk.actions.ready();
-            await sdk.actions.addFrame();
           } catch (error) {
             console.error(error);
           }
