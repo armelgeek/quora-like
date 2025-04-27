@@ -10,8 +10,8 @@
     "iconUrl": "https://bhvr.dev/icon.png",
     "homeUrl": "https://bhvr.dev",
     "imageUrl": "https://bhvr.dev/image.png",
-    "buttonTitle": "🦫",
+    "buttonTitle": "bun create bhvr",
     "splashImageUrl": "https://bhvr.dev/splash.png",
-    "splashBackgroundColor": "#232323"
+    "splashBackgroundColor": "#ffffff"
   }
 }
