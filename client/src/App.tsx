@@ -22,7 +22,7 @@ function App() {
 
   const copyToClipboard = async () => {
     try {
-      await navigator.clipboard.writeText('bun create bhvr')
+      await navigator.clipboard.writeText('bun create bhvr@latest')
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch (err) {
@@ -71,7 +71,7 @@ function App() {
           <p className="text-sm text-muted-foreground mb-2">Get started with:</p>
           <div className="relative w-full rounded-lg bg-zinc-100 dark:bg-zinc-800 p-4 overflow-hidden">
             <pre className="text-sm font-mono">
-              <code>bun create bhvr</code>
+              <code>bun create bhvr@latest</code>
             </pre>
             <Button
               variant="ghost"
