@@ -31,7 +31,7 @@ function App() {
   }
 
   return (
-    <main className="flex min-h-screen max-w-lg mx-auto flex-col items-center justify-start p-4 md:p-8 mt-20">
+    <main className="flex min-h-screen max-w-lg mx-auto flex-col items-center justify-start p-4 md:p-8 mt-8 sm:mt-20">
       <div className="w-full max-w-2xl flex flex-col items-center gap-8">
         <div className="flex flex-col items-center gap-3">
           <div className="rounded-full bg-zinc-100 dark:bg-zinc-800 p-4 mb-2">
@@ -85,7 +85,7 @@ function App() {
         </div>
 
         <footer className="text-sm text-muted-foreground pt-8">
-          <p>Built with 🦫 by <Link href="https://stevedylan.dev" className="underline">Steve</Link></p>
+          <p className='flex items-center gap-1'>Built with 🦫 by <Link href="https://stevedylan.dev" className="underline">Steve</Link></p>
         </footer>
       </div>
 
