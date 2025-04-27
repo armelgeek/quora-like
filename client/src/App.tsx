@@ -46,9 +46,9 @@ function App() {
   .
   ├── client/               # React frontend
   ├── server/               # Hono backend
-  ├── shared/               # Shared TypeScript definitions
-  │   └── src/types/        # Type definitions used by both client and server
-  └── package.json          # Root package.json with workspaces
+  ├── shared/               # Shared Packages
+  │   └── src/types/        # Type definitions
+  └── package.json          # Root package.json
 `}
           </code>
         </pre>

@@ -1,8 +1,10 @@
 #root {
   max-width: 1280px;
+  width: 100%;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1rem;
   text-align: center;
+  box-sizing: border-box;
 }
 
 .logo {
@@ -34,7 +36,7 @@
 }
 
 .card {
-  padding: 2em;
+  padding: 1em;
 }
 
 .read-the-docs {
@@ -44,11 +46,47 @@
 .response {
   background: #444444;
   border-radius: 15px;
-  padding: 2rem;
+  padding: 1rem;
+  margin: 1rem auto;
+  overflow-x: auto;
+  word-break: break-word;
+  max-width: 100%;
 }
 
 .code {
   text-align: start;
-  max-width: 500px;
-  margin: auto;
+  width: 100%;
+  max-width: 400px;
+  margin: 1rem auto;
+  overflow-x: auto;
+}
+
+pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+@media (max-width: 768px) {
+  .logo {
+    height: 4em;
+    padding: 1em;
+  }
+
+  .response, .code {
+    font-size: 0.9em;
+  }
+
+  pre {
+    overflow-x: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  #root {
+    padding: 0.5rem;
+  }
+
+  .card {
+    padding: 0.5em;
+  }
 }
