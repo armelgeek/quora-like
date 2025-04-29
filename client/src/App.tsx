@@ -140,11 +140,10 @@ function App() {
                       </p>
 
 
-                      <div className="relative w-full rounded-lg bg-zinc-100 dark:bg-zinc-800 p-4 overflow-hidden">
-                        <pre className="text-sm font-mono">
-                          <code>bun install <br/>bun run dev</code>
-                        </pre>
-                      </div>
+                      <CodeBlock>
+                        <CodeBlockCode code={`bun run install
+bun run dev`} language="bash" />
+                      </CodeBlock>
                     </CardContent>
                   </CollapsibleContent>
                 </Card>
