@@ -27,8 +27,7 @@ export const auth = betterAuth({
     })
   ],
   database: drizzleAdapter(db, {
-    provider: 'pg',
-    usePlural: true
+    provider: 'pg'
   }),
   baseURL: Bun.env.BETTER_AUTH || 'http://localhost:3000',
   trustedOrigins: [Bun.env.BETTER_AUTH || 'http://localhost:3000', Bun.env.REACT_APP_URL || 'http://localhost:5173'],
@@ -49,7 +48,9 @@ export const auth = betterAuth({
       }
     }
   },
-  session: { modelName: 'sessions' },
+  session: {
+    modelName: 'sessions'
+  },
   account: {
     modelName: 'accounts'
   },

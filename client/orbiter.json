@@ -1,6 +1,0 @@
-{
-  "siteId": "3118e79c-3c57-44c8-94fc-e499ccfc2117",
-  "domain": "bhvr",
-  "buildCommand": "bun run build",
-  "buildDir": "dist"
-}

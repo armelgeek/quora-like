@@ -22,9 +22,9 @@ export const Meteors = ({ number }: { number: number }) => {
 }
 
 Home.get('/', (c) => {
-  const title = 'API de Meko Academy'
+  const title = 'API de Demo'
   const description =
-    "L'API de Meko Academy offre un accès complet aux fonctionnalités de la plateforme, permettant une intégration simple et efficace de nos services."
+    "L'API de Demo offre un accès complet aux fonctionnalités de la plateforme, permettant une intégration simple et efficace de nos services."
 
   return c.html(
     <html>
@@ -87,7 +87,7 @@ Home.get('/', (c) => {
               />
             </svg>
             <p class="text-2xl md:text-4xl text-transparent font-bold leading-none bg-clip-text bg-gradient-to-r from-[#7EDAFD] to-blue-600">
-              API de Meko Academy
+              API de Demo
             </p>
           </div>
 
@@ -99,9 +99,9 @@ Home.get('/', (c) => {
             >
               <div class="flex flex-col">
                 <span class="text-xs uppercase bg-opacity-15 rounded text-center max-w-fit px-2 py-1 font-bold tracking-wide bg-blue-500 text-blue-500">
-                  Meko Academy
+                  Demo
                 </span>
-                <span class="text-neutral-200 font-bold text-lg sm:text-xl md:text-2xl mt-2">API de Meko Academy</span>
+                <span class="text-neutral-200 font-bold text-lg sm:text-xl md:text-2xl mt-2">API de Demo</span>
                 <div class="text-neutral-500 mt-2">
                   Découvrez la documentation pour apprendre à intégrer et tirer parti des services proposés.
                 </div>
