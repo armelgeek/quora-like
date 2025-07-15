@@ -23,7 +23,9 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "../../shared/src/types/**/*.ts"],
+  "references": [{ "path": "../shared" }],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "../../shared/src/types/**/*.ts"],
   "exclude": ["node_modules"],
   "tsc-alias": { "resolveFullPaths": true }
 }

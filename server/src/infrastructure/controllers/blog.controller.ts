@@ -73,7 +73,7 @@ export class BlogController implements Routes {
           }
         }
       }),
-      async (c:any) => {
+      async (c: any) => {
         const page = Number(c.req.query('page') ?? '1')
         const limit = Number(c.req.query('limit') ?? '10')
         const result = await this.getAllBlogs.execute(page, limit)
@@ -107,7 +107,7 @@ export class BlogController implements Routes {
           }
         }
       }),
-      async (c) => {
+      async (c: any) => {
         const id = c.req.param('id')
         const result = await this.getBlogById.execute(id)
         return c.json(result)
@@ -146,7 +146,7 @@ export class BlogController implements Routes {
           }
         }
       }),
-      async (c) => {
+      async (c:any) => {
         const body = await c.req.json()
         const result = await this.createBlog.execute(body)
         return c.json(result)
@@ -186,7 +186,7 @@ export class BlogController implements Routes {
           }
         }
       }),
-      async (c) => {
+      async (c:any) => {
         const id = c.req.param('id')
         const body = await c.req.json()
         const result = await this.updateBlog.execute(id, body)
