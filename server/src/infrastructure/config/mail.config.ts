@@ -7,7 +7,7 @@ type EmailParams = {
 }
 
 const FROM_NAME = 'Demo'
-const FROM_EMAIL = 'contact@mekoacademy.com'
+const FROM_EMAIL = 'contact@demo.com'
 
 const transporter = nodemailer.createTransport({
   host: Bun.env.SMTP_HOST,
