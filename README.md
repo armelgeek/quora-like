@@ -67,7 +67,6 @@ import { ApiResponse } from '@shared/types';
 ## Learn More
 
 - [Bun Documentation](https://bun.sh/docs)
-- [Vite Documentation](https://vitejs.dev/guide/)
 - [React Documentation](https://react.dev/learn)
 - [Hono Documentation](https://hono.dev/docs)
 - [TypeScript Documentation](https://www.typescriptlang.org/docs/)

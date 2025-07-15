@@ -4,7 +4,7 @@
   "description": "A monorepo template built with Bun, Hono, Vite, and React",
   "author": "Steve Simkins",
   "license": "MIT",
-  "homepage": "https://github.com/stevedylandev/bhvr",
+  "homepage": "https://github.com/armelgeek/mono-repo-boilerplate",
   "workspaces": [
     "./server",
     "./client",
