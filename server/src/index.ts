@@ -1,5 +1,5 @@
 import { App } from './app'
-import { UserController } from './infrastructure/controllers'
+import { BlogController, UserController } from './infrastructure/controllers'
 
-const app = new App([new UserController()]).getApp()
+const app = new App([new UserController(), new BlogController()]).getApp()
 export default app

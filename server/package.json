@@ -13,7 +13,11 @@
   },
   "sideEffects": false,
   "scripts": {
-    "dev": "bun run --hot src/index.ts",
+  "dev": "bun run --hot src/index.ts",
+  "dev:client": "cd ../client && bun run dev",
+  "dev:shared": "cd ../shared && bun run dev",
+  "build:client": "cd ../client && bun run build",
+  "build:shared": "cd ../shared && bun run build",
     "deploy": "wrangler deploy --minify",
     "start": "bun dist/server.js",
     "prebuild": "rm -rf dist",

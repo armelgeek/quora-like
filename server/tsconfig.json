@@ -5,11 +5,12 @@
     "jsxImportSource": "hono/jsx",
     "lib": ["ESNext", "esnext.asynciterable", "DOM"],
     "baseUrl": ".",
-    "rootDir": "./src",
+  "rootDir": "../",
     "module": "ESNext",
     "moduleResolution": "bundler",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@shared/types": ["../../shared/src/types/index.ts"]
     },
     "resolveJsonModule": true,
     "strict": true,

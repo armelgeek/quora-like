@@ -18,7 +18,7 @@ type ControlledTextareaInputProps<T extends FieldValues> = UseControllerProps<T>
   placeholder?: string;
 } & ComponentProps<typeof Textarea>
 
-export function ControlledTextareaInput<T extends FieldValues>({  name,label, placeholder, control, defaultValue, ...props }: ControlledTextareaInputProps<T>) {
+export function ControlledTextareaInput<T extends FieldValues>({  name,label, placeholder, control, defaultValue }: ControlledTextareaInputProps<T>) {
   const { field, fieldState } = useController<T>({
     control,
     name,

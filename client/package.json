@@ -7,7 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "lint:fix": "next lint --fix"
+    "lint:fix": "next lint --fix",
+    "dev:shared": "cd ../shared && bun run dev",
+    "dev:server": "cd ../server && bun run dev",
+    "build:shared": "cd ../shared && bun run build",
+    "build:server": "cd ../server && bun run build"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
