@@ -1,6 +1,10 @@
 'use client';
 
 import React, { useEffect } from 'react';
+import dynamic from 'next/dynamic';
+// Chargement dynamique de ReactQuill pour éviter les problèmes SSR
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false }) as any;
+import 'react-quill/dist/quill.snow.css';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -321,14 +325,16 @@ export function DynamicForm<
 
       case 'rich-text':
         return (
-          <Textarea
-            placeholder={fieldConfig.placeholder}
-            className="min-h-[120px]"
-            value={(fieldProps.value as string) || ''}
-            onChange={(e) => fieldProps.onChange(e.target.value)}
-            onBlur={fieldProps.onBlur}
-            disabled={fieldProps.disabled}
-          />
+          <div className="min-h-[120px]">
+            <ReactQuill
+              theme="snow"
+              value={(fieldProps.value as string) || ''}
+              onChange={fieldProps.onChange}
+              readOnly={fieldProps.disabled}
+              placeholder={fieldConfig.placeholder || 'Rédigez le contenu...'}
+              style={{ minHeight: 120 }}
+            />
+          </div>
         );
 
       case 'relation':

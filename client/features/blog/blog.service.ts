@@ -1,5 +1,5 @@
 import { API_ENDPOINTS } from '@/shared/config/api';
-import type { Blog, BlogCreate, BlogUpdate, BlogResponse, BlogListResponse } from '../../../shared/src/types/blog';
+import type { Blog, BlogCreate, BlogUpdate, BlogResponse, BlogListResponse, BlogWithCategories } from '../../../shared/src/types/blog';
 import { BaseServiceImpl } from '@/shared/domain/base.service';
 
 export class BlogService extends BaseServiceImpl<Blog, BlogCreate> {
@@ -28,6 +28,10 @@ export class BlogService extends BaseServiceImpl<Blog, BlogCreate> {
     return this.get<BlogResponse>(API_ENDPOINTS.blog.detail(id));
   }
 
+  async getByIdWithCategories(id: string): Promise<{ success: boolean; data?: BlogWithCategories }> {
+    return this.get<{ success: boolean; data?: BlogWithCategories }>(`${API_ENDPOINTS.blog.detail(id)}/with-categories`);
+  }
+
   async create(data: BlogCreate): Promise<{ message: string; status: number; data: Blog }> {
     const res = await this.post<BlogResponse>(API_ENDPOINTS.blog.create, data);
     return {
@@ -48,6 +52,14 @@ export class BlogService extends BaseServiceImpl<Blog, BlogCreate> {
 
   async deleteById(id: string): Promise<BlogResponse> {
     return this.delete<BlogResponse>(API_ENDPOINTS.blog.delete(id));
+  }
+
+  async addCategoriesToBlog(blogId: string, categoryIds: string[]): Promise<BlogResponse> {
+    return this.post<BlogResponse>(`${API_ENDPOINTS.blog.detail(blogId)}/categories`, { categoryIds });
+  }
+
+  async removeCategoriesFromBlog(blogId: string): Promise<BlogResponse> {
+    return this.delete<BlogResponse>(`${API_ENDPOINTS.blog.detail(blogId)}/categories`);
   }
 }
 

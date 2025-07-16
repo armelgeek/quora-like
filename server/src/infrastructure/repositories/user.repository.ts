@@ -1,24 +1,130 @@
-import type { User } from '@/domain/models/user.model'
+import process from 'node:process'
+import { count, eq } from 'drizzle-orm'
+import { drizzle } from 'drizzle-orm/postgres-js'
+import postgres from 'postgres'
+import type { UserType } from '@/domain/models/user.model'
 import type { UserRepositoryInterface } from '@/domain/repositories/user.repository.interface'
-import type { z } from 'zod'
+import { users } from '../database/schema/auth'
 
 export class UserRepository implements UserRepositoryInterface {
-  private users: Map<string, z.infer<typeof User>> = new Map()
+  private db: ReturnType<typeof drizzle>
 
-  async findById(id: string): Promise<z.infer<typeof User> | null> {
-    return (await this.users.get(id)) || null
+  constructor() {
+    const connectionString = process.env.DATABASE_URL!
+    const client = postgres(connectionString)
+    this.db = drizzle(client)
   }
 
-  async findAll(): Promise<z.infer<typeof User>[]> {
-    return await Array.from(this.users.values())
+  async findById(id: string): Promise<UserType | null> {
+    const result = await this.db.select().from(users).where(eq(users.id, id)).limit(1)
+    if (!result.length) return null
+
+    return {
+      ...result[0],
+      firstname: result[0].firstname || undefined,
+      lastname: result[0].lastname || undefined,
+      image: result[0].image || undefined,
+      createdAt: result[0].createdAt.toISOString(),
+      updatedAt: result[0].updatedAt.toISOString()
+    }
   }
 
-  async save(user: z.infer<typeof User>): Promise<z.infer<typeof User>> {
-    await this.users.set(user.id, user)
-    return user
+  async findByEmail(email: string): Promise<UserType | null> {
+    const result = await this.db.select().from(users).where(eq(users.email, email)).limit(1)
+    if (!result.length) return null
+
+    return {
+      ...result[0],
+      firstname: result[0].firstname || undefined,
+      lastname: result[0].lastname || undefined,
+      image: result[0].image || undefined,
+      createdAt: result[0].createdAt.toISOString(),
+      updatedAt: result[0].updatedAt.toISOString()
+    }
+  }
+
+  async findAll(
+    page: number = 1,
+    limit: number = 10
+  ): Promise<{ items: UserType[]; total: number; page: number; limit: number; totalPages: number }> {
+    const offset = (page - 1) * limit
+
+    const [items, totalResult] = await Promise.all([
+      this.db.select().from(users).limit(limit).offset(offset),
+      this.db.select({ count: count() }).from(users)
+    ])
+
+    const total = totalResult[0].count
+    const totalPages = Math.ceil(total / limit)
+
+    return {
+      items: items.map((item) => ({
+        ...item,
+        firstname: item.firstname || undefined,
+        lastname: item.lastname || undefined,
+        image: item.image || undefined,
+        createdAt: item.createdAt.toISOString(),
+        updatedAt: item.updatedAt.toISOString()
+      })),
+      total,
+      page,
+      limit,
+      totalPages
+    }
+  }
+
+  async save(user: UserType): Promise<UserType> {
+    const userData = {
+      ...user,
+      firstname: user.firstname || null,
+      lastname: user.lastname || null,
+      image: user.image || null,
+      createdAt: new Date(user.createdAt),
+      updatedAt: new Date(user.updatedAt)
+    }
+
+    const result = await this.db.insert(users).values(userData).returning()
+
+    return {
+      ...result[0],
+      firstname: result[0].firstname || undefined,
+      lastname: result[0].lastname || undefined,
+      image: result[0].image || undefined,
+      createdAt: result[0].createdAt.toISOString(),
+      updatedAt: result[0].updatedAt.toISOString()
+    }
+  }
+
+  async update(id: string, data: Partial<UserType>): Promise<UserType | null> {
+    const updateData: any = {
+      firstname: data.firstname || null,
+      lastname: data.lastname || null,
+      image: data.image || null,
+      updatedAt: new Date()
+    }
+
+    // Only include fields that are actually being updated
+    if (data.name !== undefined) updateData.name = data.name
+    if (data.email !== undefined) updateData.email = data.email
+    if (data.emailVerified !== undefined) updateData.emailVerified = data.emailVerified
+    if (data.isAdmin !== undefined) updateData.isAdmin = data.isAdmin
+
+    const result = await this.db.update(users).set(updateData).where(eq(users.id, id)).returning()
+
+    if (!result.length) return null
+
+    return {
+      ...result[0],
+      firstname: result[0].firstname || undefined,
+      lastname: result[0].lastname || undefined,
+      image: result[0].image || undefined,
+      createdAt: result[0].createdAt.toISOString(),
+      updatedAt: result[0].updatedAt.toISOString()
+    }
   }
 
   async remove(id: string): Promise<boolean> {
-    return await this.users.delete(id)
+    const result = await this.db.delete(users).where(eq(users.id, id)).returning()
+    return result.length > 0
   }
 }

@@ -1,12 +1,16 @@
-import { GetUserByIdUseCase, type GetUserByIdArgs } from '../use-cases/user/get-user-by.use-case'
+import { UserRepository } from '../../infrastructure/repositories/user.repository'
+import { GetUserByIdUseCase } from '../use-cases/user'
 
 export class UserService {
   private readonly getUserByIdUseCase: GetUserByIdUseCase
+  private readonly userRepository: UserRepository
 
   constructor() {
-    this.getUserByIdUseCase = new GetUserByIdUseCase()
+    this.userRepository = new UserRepository()
+    this.getUserByIdUseCase = new GetUserByIdUseCase(this.userRepository)
   }
-  getUserById = (args: GetUserByIdArgs & { currentUserId: string }) => {
-    return this.getUserByIdUseCase.run(args)
+
+  getUserById = (userId: string) => {
+    return this.getUserByIdUseCase.execute(userId)
   }
 }

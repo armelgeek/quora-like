@@ -9,5 +9,21 @@ export const API_ENDPOINTS = {
     create: "/blogs",
     update: (id: string) => `/blogs/${id}`,
     delete: (id: string) => `/blogs/${id}`,
+  },
+  user: {
+    list: "/users",
+    detail: (id: string) => `/users/${id}`,
+    byEmail: (email: string) => `/users/email/${email}`,
+    update: (id: string) => `/users/${id}`,
+    delete: (id: string) => `/users/${id}`,
+    session: "/v1/users/session",
+  },
+  category: {
+    list: "/categories",
+    detail: (id: string) => `/categories/${id}`,
+    bySlug: (slug: string) => `/categories/slug/${slug}`,
+    create: "/categories",
+    update: (id: string) => `/categories/${id}`,
+    delete: (id: string) => `/categories/${id}`,
   }
 };
