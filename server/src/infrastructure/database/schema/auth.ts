@@ -1,4 +1,5 @@
-import { boolean, pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core'
+import { boolean, jsonb, pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core'
+import type { Action, Subject } from '@/domain/types/permission.type'
 
 export const users = pgTable('users', {
   id: text('id').primaryKey(),
@@ -75,4 +76,35 @@ export const subscriptionHistory = pgTable('subscription_history', {
   currency: text('currency'),
   status: text('status').notNull(),
   timestamp: timestamp('timestamp').notNull().defaultNow()
+})
+
+export const roles = pgTable('roles', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull().unique(),
+  description: text('description'),
+  createdAt: timestamp('created_at').notNull(),
+  updatedAt: timestamp('updated_at').notNull()
+})
+
+export const roleResources = pgTable('role_resources', {
+  id: text('id').primaryKey(),
+  roleId: text('role_id')
+    .notNull()
+    .references(() => roles.id, { onDelete: 'cascade' }),
+  resourceType: text('resource_type').notNull().$type<Subject>(),
+  actions: jsonb('actions').notNull().$type<Action[]>(),
+  createdAt: timestamp('created_at').notNull(),
+  updatedAt: timestamp('updated_at').notNull()
+})
+
+export const userRoles = pgTable('user_roles', {
+  id: text('id').primaryKey(),
+  userId: text('user_id')
+    .notNull()
+    .references(() => users.id, { onDelete: 'cascade' }),
+  roleId: text('role_id')
+    .notNull()
+    .references(() => roles.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at').notNull(),
+  updatedAt: timestamp('updated_at').notNull()
 })

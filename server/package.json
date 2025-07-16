@@ -34,7 +34,8 @@
     "db:generate": "npx drizzle-kit generate",
     "db:migrate": "tsx ./drizzle/migrate.ts",
     "db:studio": "npx drizzle-kit studio",
-    "db:push": "npx drizzle-kit push"
+    "db:push": "npx drizzle-kit push",
+    "create:superuser": "bun run ./drizzle/create-super-admin.js"
   },
   "simple-git-hooks": {
     "pre-commit": "bun run lint && bun run format",

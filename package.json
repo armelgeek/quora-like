@@ -28,7 +28,8 @@
     "db:studio": "cd server && bun run db:studio",
     "postinstall": "bun run build:shared",
     "deploy:client": "cd client && orbiter deploy",
-    "deploy:server": "cd server && bun run deploy"
+    "deploy:server": "cd server && bun run deploy",
+    "create:superuser": "cd server && bun run create:superuser"
   },
   "keywords": [
     "bun",

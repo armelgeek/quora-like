@@ -22,6 +22,13 @@
       "when": 1752650583445,
       "tag": "0002_abandoned_darkstar",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1752659523073,
+      "tag": "0003_shallow_firedrake",
+      "breakpoints": true
     }
   ]
 }
