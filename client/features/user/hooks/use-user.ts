@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { userService } from '../user.service'
-import type { User, UserUpdate } from '@shared/types'
+import type { UserUpdate } from '@shared/types'
 
 export const useUsers = (page: number = 1, limit: number = 10) => {
   return useQuery({

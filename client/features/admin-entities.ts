@@ -1,6 +1,4 @@
-import type { EntityConfig } from '@/shared/lib/types'
-
-// Import admin entity registrations
+import { EntityConfig } from '@/shared/lib/types/entity'
 import './category/category.admin'
 
 export const adminEntities: EntityConfig[] = [
