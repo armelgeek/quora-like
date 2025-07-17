@@ -235,7 +235,6 @@ export class CategoryController implements Routes {
       }
     )
 
-    // DELETE /categories/:id
     this.controller.openapi(
       createRoute({
         method: 'delete',

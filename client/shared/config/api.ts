@@ -4,6 +4,7 @@ export const API_ENDPOINTS = {
     version: "v1",
   },
   blog: {
+    base: "/blogs",
     list: "/blogs",
     detail: (id: string) => `/blogs/${id}`,
     create: "/blogs",
@@ -25,5 +26,12 @@ export const API_ENDPOINTS = {
     create: "/categories",
     update: (id: string) => `/categories/${id}`,
     delete: (id: string) => `/categories/${id}`,
+  },
+  dashboard: {
+    overview: "/dashboard/overview",
+    stats: "/dashboard/stats", 
+    activity: "/dashboard/activity",
+    events: "/dashboard/events",
+    notifications: "/dashboard/notifications",
   }
 };

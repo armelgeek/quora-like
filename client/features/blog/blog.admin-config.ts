@@ -1,88 +1,47 @@
-import { blogService } from './blog.service';
+import { blogAdminService } from './blog.service';
 import { z } from 'zod';
+import { createAdminEntity, createField } from '@/shared/lib/admin/admin-generator';
 
 export const blogSchema = z.object({
-  id: z.string().optional(),
-  title: z.string(),
-  slug: z.string(),
-  content: z.string(),
-  excerpt: z.string().optional(),
-  authorId: z.string(),
-  createdAt: z.string().optional(),
-  updatedAt: z.string().optional(),
-  tags: z.array(z.string()).optional(),
-  published: z.boolean().optional(),
-  status: z.enum(['draft', 'published', 'archived', 'scheduled']).optional(),
-  viewCount: z.number().optional(),
-  readTime: z.number().optional(),
-  featuredImage: z.string().optional(),
-  publishedAt: z.string().optional(),
-  // SEO Metadata
-  metaTitle: z.string().optional(),
-  metaDescription: z.string().optional(),
-  metaKeywords: z.array(z.string()).optional(),
-  ogImage: z.string().optional(),
-  ogDescription: z.string().optional(),
-  // Content Management
-  contentType: z.enum(['markdown', 'html', 'rich-text']).optional(),
-  isDraft: z.boolean().optional(),
-  scheduledAt: z.string().optional(),
+  id: createField.string({ label: 'ID' }).optional(),
+  title: createField.string({ label: 'Title' }),
+  slug: createField.string({ label: 'Slug' }),
+  content: createField.richText({ label: 'Content' }),
+  excerpt: createField.textarea({ label: 'Excerpt' }).optional(),
+  authorId: createField.string({ label: 'Author ID' }),
+  createdAt: createField.string({ label: 'Created At', readOnly: true }).optional(),
+  updatedAt: createField.string({ label: 'Updated At', readOnly: true }).optional(),
+  tags: createField.list({ label: 'Tags' }).optional(),
+  published: createField.boolean({ label: 'Published' }).optional(),
+  status: createField.select(['draft', 'published', 'archived', 'scheduled'], { label: 'Status' }).optional(),
+  viewCount: createField.number({ label: 'Views', readOnly: true }).optional(),
+  readTime: createField.number({ label: 'Read Time (min)' }).optional(),
+  featuredImage: createField.image({ label: 'Featured Image' }).optional(),
+  publishedAt: createField.string({ label: 'Published At' }).optional(),
+  metaTitle: createField.string({ label: 'Meta Title' }).optional(),
+  metaDescription: createField.textarea({ label: 'Meta Description' }).optional(),
+  metaKeywords: createField.list({ label: 'Meta Keywords' }).optional(),
+  ogImage: createField.image({ label: 'OG Image' }).optional(),
+  ogDescription: createField.textarea({ label: 'OG Description' }).optional(),
+  contentType: createField.select(['markdown', 'html', 'rich-text'], { label: 'Content Type' }).optional(),
+  isDraft: createField.boolean({ label: 'Is Draft' }).optional(),
+  scheduledAt: createField.string({ label: 'Scheduled At' }).optional(),
   // Media
-  galleryImages: z.array(z.string()).optional(),
-  videoUrl: z.string().optional(),
-  audioUrl: z.string().optional(),
+  galleryImages: createField.list({ label: 'Gallery Images' }).optional(),
+  videoUrl: createField.url({ label: 'Video URL' }).optional(),
+  audioUrl: createField.url({ label: 'Audio URL' }).optional(),
 });
 
-export const blogAdminConfig = {
-  title: 'Blog',
-  entity: 'blog',
-  service: blogService,
-  schema: blogSchema,
-  fields: [
-    { key: 'title', label: 'Titre', type: 'text', required: true, display: { showInForm: true, order: 1 } },
-    { key: 'slug', label: 'Slug', type: 'text', required: true, display: { showInForm: true, order: 2 } },
-    { key: 'content', label: 'Contenu', type: 'rich-text', required: true, display: { showInForm: true, order: 3 } },
-    { key: 'excerpt', label: 'Résumé', type: 'textarea', display: { showInForm: true, order: 4 } },
-    { key: 'authorId', label: 'Auteur', type: 'text', required: true, display: { showInForm: true, order: 5 } },
-    { key: 'tags', label: 'Tags', type: 'list', display: { showInForm: true, order: 6 } },
-    { key: 'published', label: 'Publié', type: 'boolean', display: { showInForm: true, order: 7 } },
-    { key: 'status', label: 'Statut', type: 'select', options: ['draft', 'published', 'archived', 'scheduled'], display: { showInForm: true, order: 8 } },
-    { key: 'featuredImage', label: 'Image principale', type: 'image', display: { showInForm: true, order: 9 } },
-    { key: 'galleryImages', label: 'Galerie d’images', type: 'list', display: { showInForm: true, order: 10 } },
-    { key: 'videoUrl', label: 'Vidéo', type: 'url', display: { showInForm: true, order: 11 } },
-    { key: 'audioUrl', label: 'Audio', type: 'url', display: { showInForm: true, order: 12 } },
-    { key: 'metaTitle', label: 'Titre SEO', type: 'text', display: { showInForm: true, order: 13 } },
-    { key: 'metaDescription', label: 'Description SEO', type: 'textarea', display: { showInForm: true, order: 14 } },
-    { key: 'metaKeywords', label: 'Mots-clés SEO', type: 'list', display: { showInForm: true, order: 15 } },
-    { key: 'ogImage', label: 'Image OpenGraph', type: 'image', display: { showInForm: true, order: 16 } },
-    { key: 'ogDescription', label: 'Description OpenGraph', type: 'textarea', display: { showInForm: true, order: 17 } },
-    { key: 'contentType', label: 'Type de contenu', type: 'select', options: ['markdown', 'html', 'rich-text'], display: { showInForm: true, order: 18 } },
-    { key: 'isDraft', label: 'Brouillon', type: 'boolean', display: { showInForm: true, order: 19 } },
-    { key: 'scheduledAt', label: 'Date de publication planifiée', type: 'date', display: { showInForm: true, order: 20 } },
-    { key: 'createdAt', label: 'Créé le', type: 'date', display: { showInForm: false } },
-    { key: 'updatedAt', label: 'Modifié le', type: 'date', display: { showInForm: false } },
-    { key: 'viewCount', label: 'Vues', type: 'number', display: { showInForm: false } },
-    { key: 'readTime', label: 'Temps de lecture', type: 'number', display: { showInForm: false } },
-  ],
-  actions: {
-    create: true,
-    read: true,
-    update: true,
-    delete: true,
-    bulk: false
-  },
-  accessor: {
-    getValue: <T = unknown>(item: Record<string, unknown>, key: string): T | undefined => {
-      return item[key] as T | undefined;
-    },
-    setValue: (item: Record<string, unknown>, key: string, value: unknown) => { item[key] = value },
-    hasValue: (item: Record<string, unknown>, key: string) => key in item,
-  },
-  parent: undefined,
+
+export const blogAdminConfig = createAdminEntity('Blog', blogSchema, {
+  description: 'Manage your blog posts',
+  icon: '📝',
+  actions: { create: true, read: true, update: true, delete: true, bulk: false },
+  services: blogAdminService,
   queryKey: ['blogs'],
-  formFields: [
-    'title', 'slug', 'content', 'excerpt', 'authorId', 'tags', 'published', 'status', 'featuredImage', 'galleryImages', 'videoUrl', 'audioUrl',
-    'metaTitle', 'metaDescription', 'metaKeywords', 'ogImage', 'ogDescription', 'contentType', 'isDraft', 'scheduledAt'
-  ],
-  children: []
-};
+  ui: {
+    form: {
+      layout: 'horizontal',
+    }
+  }
+});

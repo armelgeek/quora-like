@@ -1,4 +1,5 @@
 import { API_ENDPOINTS } from '@/shared/config/api';
+import { createApiService } from '@/shared/lib/admin/admin-generator';
 import type { Blog, BlogCreate, BlogUpdate, BlogResponse, BlogListResponse, BlogWithCategories } from '../../../shared/src/types/blog';
 import { BaseServiceImpl } from '@/shared/domain/base.service';
 
@@ -64,3 +65,5 @@ export class BlogService extends BaseServiceImpl<Blog, BlogCreate> {
 }
 
 export const blogService = new BlogService();
+
+export const blogAdminService = createApiService(API_ENDPOINTS.blog.base);

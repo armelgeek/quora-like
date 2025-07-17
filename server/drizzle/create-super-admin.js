@@ -1,16 +1,16 @@
-const crypto = require('node:crypto')
-const { eq } = require('drizzle-orm')
-const { Actions, Subjects } = require('../src/domain/types/permission.type')
-const { auth } = require('../src/infrastructure/config/auth.config')
-const { db } = require('../src/infrastructure/database/db/index')
-const { roleResources, roles, userRoles, users } = require('../src/infrastructure/database/schema')
+import crypto from 'node:crypto'
+import { eq } from 'drizzle-orm'
+import { Actions, Subjects } from '../src/domain/types/permission.type'
+import { auth } from '../src/infrastructure/config/auth.config'
+import { db } from '../src/infrastructure/database/db/index'
+import { roleResources, roles, userRoles, users } from '../src/infrastructure/database/schema'
 
 const SUPER_ADMINS = [
   {
     name: 'Armel Wanes',
     firstname: 'Armel',
     lastname: 'Wanes',
-    email: 'armelgeek5@gmail.com'
+    email: 'razarmel@gmail.com'
   }
 ]
 
@@ -96,12 +96,12 @@ async function createSuperAdmin(adminData, superAdminRole) {
         banExpires: new Date(0),
         isAdmin: true,
         isTrialActive: false,
-        trialStartDate: new Date(0),
-        trialEndDate: new Date(0),
-        stripeCustomerId: `${Math.random().toString(36).slice(2, 15)}`,
-        stripeSubscriptionId: `${Math.random().toString(36).slice(2, 15)}`,
+        trialStartDate: now,
+        trialEndDate: now,
+        stripeCustomerId: '',
+        stripeSubscriptionId: '',
         stripePriceId: '',
-        stripeCurrentPeriodEnd: new Date(0)
+        stripeCurrentPeriodEnd: now
       }
     })
 

@@ -3,10 +3,11 @@
 import { useState } from 'react';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { Button, LoadingButton } from '@/shared/components/atoms/ui/button';
+import { Button } from '@/shared/components/atoms/ui/button';
 import {
+  Form,
   FormControl,
   FormField,
   FormItem,
@@ -16,8 +17,6 @@ import {
 import { Input } from '@/shared/components/atoms/ui/input';
 import { cn } from '@/shared/lib/utils';
 import useLogin from '../../hooks/useLogin';
-import FormWrapper from '@/shared/components/molecules/form/FormWrapper';
-import { ControlledTextInput } from '@/shared/components/molecules/form/ControlledTextInput';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/atoms/ui/card';
 import Link from 'next/link';
 import { LoginFormSchema } from '../../config/auth.schema';
@@ -35,73 +34,111 @@ export const LoginForm = () => {
   });
 
   return (
-    <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Login</CardTitle>
-          <CardDescription>Enter your email below to login to your account</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <FormWrapper form={form} onSubmit={handleSubmit}>
-            <div className="grid space-y-6">
-              <ControlledTextInput
-                control={form.control}
-                name="email"
-                label="Email"
-                placeholder="Email"
-              />
+    <Card className="shadow-lg border-0 bg-white">
+      <CardHeader className="pb-4">
+        <CardTitle className="text-2xl font-bold text-center text-gray-900">Connexion</CardTitle>
+        <CardDescription className="text-center text-gray-600">
+          Connectez-vous à votre compte pour continuer
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-5">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field, fieldState: { error } }) => (
+                <FormItem className="space-y-1">
+                  <FormLabel className="text-sm font-semibold text-gray-700">Adresse email</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="Votre adresse email"
+                      {...field}
+                      className={cn(
+                        "h-11 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20",
+                        error && "border-red-500 focus:border-red-500 focus:ring-red-500/20"
+                      )}
+                    />
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
 
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field, fieldState: { error } }) => (
+                <FormItem className="space-y-1">
+                  <FormLabel className="text-sm font-semibold text-gray-700">Mot de passe</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Input
+                        type={isShowPassword ? 'text' : 'password'}
+                        placeholder="Votre mot de passe"
+                        {...field}
+                        className={cn(
+                          "h-11 pr-10 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20",
+                          error && "border-red-500 focus:border-red-500 focus:ring-red-500/20"
+                        )}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-full px-2"
+                        onClick={() => setIsShowPassword((prevState) => !prevState)}
+                        aria-label={isShowPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
+                      >
+                        {isShowPassword ? (
+                          <Eye className="size-4 text-gray-500" />
+                        ) : (
+                          <EyeOff className="size-4 text-gray-500" />
+                        )}
+                      </Button>
+                    </div>
+                  </FormControl>
+                  <FormMessage className="text-xs" />
+                </FormItem>
+              )}
+            />
 
-              <FormField
-                control={form.control}
-                name="password"
-                render={({ field, fieldState: { error } }) => (
-                  <FormItem className="space-y-2">
-                    <FormLabel>Password</FormLabel>
-                    <FormControl>
-                      <div className="relative">
-                        <Input
-                          type={isShowPassword ? 'text' : 'password'}
-                          {...field}
-                          className={cn('pr-10', error && 'border-destructive')}
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                          onClick={() => setIsShowPassword((prevState) => !prevState)}
-                          aria-label={isShowPassword ? 'Hide password' : 'Show password'}
-                        >
-                          {isShowPassword ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
-                        </Button>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <LoadingButton
-                type="submit"
-                pending={isLoading}
+            <div className="text-right">
+              <Link 
+                href="/forgot-password" 
+                className="text-sm text-blue-600 hover:text-blue-800 underline transition-colors duration-200"
               >
-                Login
-              </LoadingButton>
+                Mot de passe oublié ?
+              </Link>
             </div>
-          </FormWrapper>
-          <div className="flex flex-col items-center space-y-4 text-sm">
-            <Link href="/forgot-password" className="text-blue-600 mt-4 hover:text-blue-800 transition-colors duration-200 underline-offset-2 hover:underline">
-              Forgot your password?
-            </Link>
-            <div className="w-full border-t border-gray-300"></div>
-            <p className="text-gray-600">{"Don't have an account?"}</p>
-            <Link href="/register" className="px-6 py-2 border border-gray-500 rounded-full hover:bg-green-50 transition-colors duration-200 font-semibold">
-              Create an account
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+
+            <Button
+              type="submit"
+              disabled={isLoading}
+              className="w-full h-11 text-base font-semibold"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                  Connexion...
+                </>
+              ) : (
+                'Se connecter'
+              )}
+            </Button>
+          </form>
+        </Form>
+        
+        <div className="text-center pt-2">
+          <Link 
+            href="/register" 
+            className="text-sm text-blue-600 hover:text-blue-800 underline transition-colors duration-200"
+          >
+            Pas encore de compte ? S&apos;inscrire
+          </Link>
+        </div>
+      </CardContent>
+    </Card>
   );
 };

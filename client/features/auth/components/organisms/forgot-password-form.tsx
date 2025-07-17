@@ -1,5 +1,7 @@
 "use client";
 
+import Link from 'next/link';
+import { ArrowLeft, Mail, Loader2 } from 'lucide-react';
 import {
   Card,
   CardContent,
@@ -15,10 +17,10 @@ import {
   FormLabel,
   FormMessage,
 } from "@/shared/components/atoms/ui/form";
+import { Button } from "@/shared/components/atoms/ui/button";
 import { useFormHandler } from "@/shared/hooks/use-form-handler";
 import { cn } from '@/shared/lib/utils';
 import useForgotPassword from '@/features/auth/hooks/useForgotPassword';
-import { LoadingButton } from '@/shared/components/atoms/ui/button';
 import { Input } from '@/shared/components/atoms/ui/input';
 import { ForgotPasswordPayload } from "../../config/forgot-password.type";
 import { forgotPasswordSchema } from "../../config/forgot-password.schema";
@@ -26,6 +28,7 @@ import { forgotPasswordSchema } from "../../config/forgot-password.schema";
 const defaultValues = {
   email: ""
 }
+
 export function ForgotPasswordForm({
   className,
   ...props
@@ -42,53 +45,76 @@ export function ForgotPasswordForm({
     resetAfterSubmit: true,
   });
 
-
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Reset Password</CardTitle>
-          <CardDescription>
-            Enter your email below to reset your password.
+      <Card className="shadow-lg border-0 bg-white">
+        <CardHeader className="pb-4">
+          <CardTitle className="text-2xl font-bold text-center text-gray-900">
+            Mot de passe oublié
+          </CardTitle>
+          <CardDescription className="text-center text-gray-600">
+            Saisissez votre adresse email pour recevoir un lien de réinitialisation
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-5">
           <Form {...form}>
             <form
-              onSubmit={form.handleSubmit(handleSubmit)}
-              className="space-y-6"
+              onSubmit={handleSubmit}
+              className="space-y-4"
             >
-              {["email"].map((field) => (
-                <FormField
-                  control={form.control}
-                  key={field}
-                  name={field as keyof ForgotPasswordPayload}
-                  render={({ field: fieldProps }) => (
-                    <FormItem>
-                      <FormLabel>
-                        {field.charAt(0).toUpperCase() + field.slice(1)}
-                      </FormLabel>
-                      <FormControl>
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field, fieldState: { error } }) => (
+                  <FormItem className="space-y-1">
+                    <FormLabel className="text-sm font-semibold text-gray-700">
+                      Adresse email
+                    </FormLabel>
+                    <FormControl>
+                      <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 size-4" />
                         <Input
-                          id={field}
-                          type={field === "password" ? "password" : "email"}
-                          placeholder={`Enter your ${field}`}
-                          {...fieldProps}
-                          autoComplete={
-                            field === "password" ? "current-password" : "email"
-                          }
+                          type="email"
+                          placeholder="Votre adresse email"
+                          {...field}
+                          className={cn(
+                            "h-11 pl-10 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20",
+                            error && "border-red-500 focus:border-red-500 focus:ring-red-500/20"
+                          )}
                         />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              ))}
-              <LoadingButton type="submit" pending={isSubmitting}>
-                Send Reset Link
-              </LoadingButton>
+                      </div>
+                    </FormControl>
+                    <FormMessage className="text-xs" />
+                  </FormItem>
+                )}
+              />
+              
+              <Button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full h-11 text-base font-semibold"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 size-4 animate-spin" />
+                    Envoi du lien...
+                  </>
+                ) : (
+                  'Envoyer le lien de réinitialisation'
+                )}
+              </Button>
             </form>
           </Form>
+          
+          <div className="text-center pt-2">
+            <Link 
+              href="/login" 
+              className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-800 underline transition-colors duration-200"
+            >
+              <ArrowLeft className="size-3" />
+              Retour à la connexion
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>

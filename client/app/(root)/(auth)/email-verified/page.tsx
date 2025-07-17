@@ -3,50 +3,47 @@ import Link from "next/link";
 import { CheckCircle, ArrowRight } from "lucide-react";
 
 import { Button } from "@/shared/components/atoms/ui/button";
-import { Card, CardContent } from "@/shared/components/atoms/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/atoms/ui/card";
 import { FadeIn, ScaleIn } from "@/shared/components/atoms/animated-elements";
 
 export const metadata: Metadata = {
-  title: 'Email Verified',
-  description: 'Your email has been successfully verified',
+  title: 'Email vérifié - Boiler',
+  description: 'Votre adresse email a été vérifiée avec succès',
 };
 
 export default function EmailVerifiedPage() {
   return (
     <FadeIn>
-      <Card className="w-full">
-        <CardContent className="pt-6">
-          <div className="flex flex-col items-center text-center space-y-6">
+      <Card className="shadow-lg border-0 bg-white">
+        <CardHeader className="pb-4">
+          <div className="flex flex-col items-center text-center space-y-4">
             <ScaleIn delay={0.2}>
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">
-                <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
+                <CheckCircle className="w-8 h-8 text-green-600" />
               </div>
             </ScaleIn>
-            
-            <div className="space-y-2">
-              <h1 className="text-2xl font-bold tracking-tight text-green-600 dark:text-green-400">
-                Email Verified!
-              </h1>
-              <p className="text-sm text-muted-foreground max-w-sm">
-                Your email address has been successfully verified. You can now access all features of your account.
-              </p>
-            </div>
-
-            <div className="w-full space-y-3">
-              <Button asChild className="w-full">
-                <Link href="/">
-                  Continue to Home
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-              
-              <Button variant="outline" asChild className="w-full">
-                <Link href="/login">
-                  Sign In
-                </Link>
-              </Button>
-            </div>
+            <CardTitle className="text-2xl font-bold text-gray-900">
+              Email vérifié !
+            </CardTitle>
+            <CardDescription className="text-center text-gray-600 max-w-sm">
+              Votre adresse email a été vérifiée avec succès. Vous pouvez maintenant accéder à toutes les fonctionnalités.
+            </CardDescription>
           </div>
+        </CardHeader>
+        
+        <CardContent className="space-y-3">
+          <Button asChild className="w-full h-11 text-base font-semibold">
+            <Link href="/dashboard" className="flex items-center justify-center gap-2">
+              Accéder au tableau de bord
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </Button>
+          
+          <Button variant="outline" asChild className="w-full h-11">
+            <Link href="/">
+              Retour à l&apos;accueil
+            </Link>
+          </Button>
         </CardContent>
       </Card>
     </FadeIn>

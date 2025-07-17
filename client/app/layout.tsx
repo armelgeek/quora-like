@@ -21,7 +21,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
   
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${spaceGrotesk.variable} font-space-grotesk`}>
+      <body className={`${spaceGrotesk.variable}  font-space-grotesk`}>
         <NextTopLoader showSpinner={true} />
         <Provider>
               {children}

@@ -43,7 +43,7 @@ export const RegisterForm = () => {
   const handleSubmit = async (input: RegisterPayload) => {
     setIsLoading(true);
 
-    const { data, error } = await authClient.signUp.email(
+    await authClient.signUp.email(
       {
         name: input.name,
         email: input.email,
@@ -54,111 +54,136 @@ export const RegisterForm = () => {
           setIsLoading(true);
         },
         onSuccess: () => {
+          toast.success('Compte créé avec succès !');
           router.push('/login');
         },
-        onError: (ctx) => {
+        onError: () => {
           setIsLoading(false);
-          toast.error('Register failed.');
+          toast.error('Erreur lors de la création du compte.');
         },
       },
     );
   };
 
   return (
-    <div className="flex flex-col gap-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Register</CardTitle>
-          <CardDescription>Register your account</CardDescription>
-        </CardHeader>
-        <CardContent>
-
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(handleSubmit)}>
-              <div className="grid space-y-6">
+    <div className="flex min-h-screen items-center justify-center p-4">
+      <div className="w-full max-w-md">
+        <Card className="shadow-lg border-0 bg-white">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-2xl font-bold text-center text-gray-900">Créer un compte</CardTitle>
+            <CardDescription className="text-center text-gray-600">
+              Rejoignez-nous et commencez votre aventure !
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-5">
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
                 <FormField
                   control={form.control}
                   name="name"
                   render={({ field, fieldState: { error } }) => (
-                    <FormItem className="space-y-2">
-                      <FormLabel>Name</FormLabel>
+                    <FormItem className="space-y-1">
+                      <FormLabel className="text-sm font-semibold text-gray-700">Nom complet</FormLabel>
                       <FormControl>
                         <Input
                           type="text"
+                          placeholder="Votre nom complet"
                           {...field}
-                          className={error && 'border-destructive'}
+                          className={cn(
+                            "h-11 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20",
+                            error && "border-red-500 focus:border-red-500 focus:ring-red-500/20"
+                          )}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs" />
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="email"
                   render={({ field, fieldState: { error } }) => (
-                    <FormItem className="space-y-2">
-                      <FormLabel>Email</FormLabel>
+                    <FormItem className="space-y-1">
+                      <FormLabel className="text-sm font-semibold text-gray-700">Adresse email</FormLabel>
                       <FormControl>
                         <Input
-                          type="text"
+                          type="email"
+                          placeholder="Votre adresse email"
                           {...field}
-                          className={error && 'border-destructive'}
+                          className={cn(
+                            "h-11 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20",
+                            error && "border-red-500 focus:border-red-500 focus:ring-red-500/20"
+                          )}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs" />
                     </FormItem>
                   )}
                 />
-
                 <FormField
                   control={form.control}
                   name="password"
                   render={({ field, fieldState: { error } }) => (
-                    <FormItem className="space-y-2">
-                      <FormLabel>Password</FormLabel>
+                    <FormItem className="space-y-1">
+                      <FormLabel className="text-sm font-semibold text-gray-700">Mot de passe</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Input
                             type={isShowPassword ? 'text' : 'password'}
+                            placeholder="Créez un mot de passe sécurisé"
                             {...field}
-                            className={cn('pr-10', error && 'border-destructive')}
+                            className={cn(
+                              "h-11 pr-10 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20",
+                              error && "border-red-500 focus:border-red-500 focus:ring-red-500/20"
+                            )}
                           />
                           <Button
                             type="button"
                             variant="ghost"
                             size="icon"
-                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                            className="absolute right-0 top-0 h-full px-2"
                             onClick={() => setIsShowPassword((prevState) => !prevState)}
-                            aria-label={isShowPassword ? 'Hide password' : 'Show password'}
+                            aria-label={isShowPassword ? 'Masquer le mot de passe' : 'Afficher le mot de passe'}
                           >
-                            {isShowPassword ? <Eye className="size-4" /> : <EyeOff className="size-4" />}
+                            {isShowPassword ? (
+                              <Eye className="size-4 text-gray-500" />
+                            ) : (
+                              <EyeOff className="size-4 text-gray-500" />
+                            )}
                           </Button>
                         </div>
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className="text-xs" />
                     </FormItem>
                   )}
                 />
-
                 <Button
                   type="submit"
                   disabled={isLoading}
+                  className="w-full h-11 text-base font-semibold"
                 >
-                  {isLoading ? <Loader2 className="mr-2 size-4 animate-spin" /> : null}
-                  Register
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 size-4 animate-spin" />
+                      Création du compte...
+                    </>
+                  ) : (
+                    'Créer un compte'
+                  )}
                 </Button>
-              </div>
-            </form>
-          </Form>
-          <div className="flex items-center justify-center py-4 mt-2">
-            <Link href="/login" className="text-sm text-blue-600 hover:text-blue-800 transition-colors duration-200 underline">
-              Already have an account ?
-            </Link>
-          </div>
-        </CardContent>
-      </Card>
+              </form>
+            </Form>
+            <div className="text-center pt-2">
+              <Link 
+                href="/login" 
+                className="text-sm text-blue-600 hover:text-blue-800 underline transition-colors duration-200"
+              >
+                Vous avez déjà un compte ? Se connecter
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 };

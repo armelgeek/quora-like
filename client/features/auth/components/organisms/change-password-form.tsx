@@ -1,6 +1,11 @@
 "use client";
 
-import { Lock } from "lucide-react";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
+import { Lock, Eye, EyeOff, Loader2 } from "lucide-react";
+
 import {
   Dialog,
   DialogContent,
@@ -9,10 +14,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/shared/components/atoms/ui/dialog";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
-import { toast } from "sonner";
 import { Button } from '@/shared/components/atoms/ui/button';
 import { Input } from '@/shared/components/atoms/ui/input';
 import { authClient } from '@/shared/lib/config/auth-client';
@@ -26,9 +27,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/shared/components/atoms/ui/form";
+import { cn } from "@/shared/lib/utils";
 
 export function ChangePassword() {
-  const [_isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const form = useForm<UpdatePasswordPayload>({
     defaultValues: {
@@ -40,64 +45,94 @@ export function ChangePassword() {
   });
 
   const handleChangePassword = async ({ current_password, new_password }: UpdatePasswordPayload) => {
-    const response = await authClient.changePassword({
-      currentPassword: current_password,
-      newPassword: new_password,
-      revokeOtherSessions: true,
-    });
-    if (response.error) {
-      toast.error(response.error.message);
-    } else {
-      toast.success("Mot de passe modifié avec succès.");
-      form.reset();
-      setIsOpen(false);
+    try {
+      const response = await authClient.changePassword({
+        currentPassword: current_password,
+        newPassword: new_password,
+        revokeOtherSessions: true,
+      });
+      
+      if (response.error) {
+        toast.error(response.error.message);
+      } else {
+        toast.success("Mot de passe modifié avec succès");
+        form.reset();
+        setIsOpen(false);
+      }
+    } catch {
+      toast.error("Erreur lors du changement de mot de passe");
     }
   };
 
   return (
     <Dialog
-      open={_isOpen}
-      onOpenChange={(isOpen) => {
-        setIsOpen(isOpen);
-        if (isOpen) form.reset();
+      open={isOpen}
+      onOpenChange={(open) => {
+        setIsOpen(open);
+        if (!open) form.reset();
       }}
     >
       <DialogTrigger asChild>
-        <Button variant="premium" className="font-semibold shadow-md">
-          <Lock size={16} className="mr-2" /> Modifier le mot de passe
+        <Button variant="outline" className="flex items-center gap-2">
+          <Lock className="w-4 h-4" />
+          Modifier le mot de passe
         </Button>
       </DialogTrigger>
-      <DialogContent className="p-8 max-w-md w-full rounded-2xl border-0 bg-gradient-to-br from-white to-slate-50 shadow-xl">
-        <DialogHeader className="gap-2">
-          <DialogTitle className="text-left text-xl font-bold text-primary">Modifier le mot de passe</DialogTitle>
-          <DialogDescription className="text-muted-foreground text-sm">
-            Pour la sécurité de votre compte, choisissez un mot de passe fort et unique.<br />
-            <span className="text-xs text-slate-500">Astuce : Utilisez au moins 8 caractères, avec majuscules, chiffres et symboles.</span>
+      
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader className="space-y-3">
+          <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+            <Lock className="w-6 h-6 text-primary" />
+          </div>
+          <DialogTitle className="text-xl font-bold text-center text-gray-900">
+            Modifier le mot de passe
+          </DialogTitle>
+          <DialogDescription className="text-center text-gray-600">
+            Choisissez un mot de passe sécurisé avec au moins 8 caractères
           </DialogDescription>
         </DialogHeader>
 
         <Form {...form}>
           <form
-            className="space-y-6 mt-4"
+            className="space-y-4 mt-6"
             onSubmit={form.handleSubmit(handleChangePassword)}
-            autoComplete="off"
           >
             <FormField
               control={form.control}
               name="current_password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="font-medium">Mot de passe actuel</FormLabel>
+              render={({ field, fieldState: { error } }) => (
+                <FormItem className="space-y-1">
+                  <FormLabel className="text-sm font-semibold text-gray-700">
+                    Mot de passe actuel
+                  </FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Votre mot de passe actuel"
-                      type="password"
-                      autoComplete="current-password"
-                      className="input-premium"
-                      {...field}
-                    />
+                    <div className="relative">
+                      <Input
+                        type={showCurrentPassword ? 'text' : 'password'}
+                        placeholder="Votre mot de passe actuel"
+                        {...field}
+                        className={cn(
+                          "h-11 pr-10 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20",
+                          error && "border-red-500 focus:border-red-500 focus:ring-red-500/20"
+                        )}
+                        autoComplete="current-password"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-full px-2"
+                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                      >
+                        {showCurrentPassword ? (
+                          <Eye className="size-4 text-gray-500" />
+                        ) : (
+                          <EyeOff className="size-4 text-gray-500" />
+                        )}
+                      </Button>
+                    </div>
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
@@ -105,19 +140,39 @@ export function ChangePassword() {
             <FormField
               control={form.control}
               name="new_password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="font-medium">Nouveau mot de passe</FormLabel>
+              render={({ field, fieldState: { error } }) => (
+                <FormItem className="space-y-1">
+                  <FormLabel className="text-sm font-semibold text-gray-700">
+                    Nouveau mot de passe
+                  </FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Nouveau mot de passe"
-                      type="password"
-                      autoComplete="new-password"
-                      className="input-premium"
-                      {...field}
-                    />
+                    <div className="relative">
+                      <Input
+                        type={showNewPassword ? 'text' : 'password'}
+                        placeholder="Votre nouveau mot de passe"
+                        {...field}
+                        className={cn(
+                          "h-11 pr-10 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20",
+                          error && "border-red-500 focus:border-red-500 focus:ring-red-500/20"
+                        )}
+                        autoComplete="new-password"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-full px-2"
+                        onClick={() => setShowNewPassword(!showNewPassword)}
+                      >
+                        {showNewPassword ? (
+                          <Eye className="size-4 text-gray-500" />
+                        ) : (
+                          <EyeOff className="size-4 text-gray-500" />
+                        )}
+                      </Button>
+                    </div>
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
@@ -125,38 +180,67 @@ export function ChangePassword() {
             <FormField
               control={form.control}
               name="confirm_new_password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="font-medium">Confirmer le nouveau mot de passe</FormLabel>
+              render={({ field, fieldState: { error } }) => (
+                <FormItem className="space-y-1">
+                  <FormLabel className="text-sm font-semibold text-gray-700">
+                    Confirmer le nouveau mot de passe
+                  </FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Confirmez le nouveau mot de passe"
-                      type="password"
-                      autoComplete="new-password"
-                      className="input-premium"
-                      {...field}
-                    />
+                    <div className="relative">
+                      <Input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        placeholder="Confirmez votre nouveau mot de passe"
+                        {...field}
+                        className={cn(
+                          "h-11 pr-10 border focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20",
+                          error && "border-red-500 focus:border-red-500 focus:ring-red-500/20"
+                        )}
+                        autoComplete="new-password"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-full px-2"
+                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      >
+                        {showConfirmPassword ? (
+                          <Eye className="size-4 text-gray-500" />
+                        ) : (
+                          <EyeOff className="size-4 text-gray-500" />
+                        )}
+                      </Button>
+                    </div>
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-xs" />
                 </FormItem>
               )}
             />
 
-            <Button
-              type="submit"
-              className="w-full py-3 px-5 rounded-lg font-semibold bg-gradient-to-r from-primary to-blue-600 text-white shadow-lg hover:scale-[1.01] transition-all duration-150"
-              disabled={form.formState.isSubmitting}
-              aria-label="Valider le changement de mot de passe"
-            >
-              {form.formState.isSubmitting ? (
-                <span className="flex items-center justify-center gap-2">
-                  <svg className="animate-spin h-5 w-5 text-white" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" /><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z" /></svg>
-                  Enregistrement...
-                </span>
-              ) : (
-                "Valider"
-              )}
-            </Button>
+            <div className="flex gap-3 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                onClick={() => setIsOpen(false)}
+              >
+                Annuler
+              </Button>
+              <Button
+                type="submit"
+                disabled={form.formState.isSubmitting}
+                className="flex-1 h-11 text-base font-semibold"
+              >
+                {form.formState.isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 size-4 animate-spin" />
+                    Modification...
+                  </>
+                ) : (
+                  'Modifier'
+                )}
+              </Button>
+            </div>
           </form>
         </Form>
       </DialogContent>

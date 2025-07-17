@@ -8,19 +8,19 @@ export const categorySchema = z.object({
   id: z.string().optional(),
   name: z
     .string()
-    .min(2, 'Le nom doit contenir au moins 2 caractères')
-    .max(100, 'Le nom ne peut pas dépasser 100 caractères'),
+    .min(2, 'Name must be at least 2 characters')
+    .max(100, 'Name cannot exceed 100 characters'),
   slug: z
     .string()
-    .min(2, 'Le slug doit contenir au moins 2 caractères')
-    .max(100, 'Le slug ne peut pas dépasser 100 caractères')
+    .min(2, 'Slug must be at least 2 characters')
+    .max(100, 'Slug cannot exceed 100 characters')
     .regex(
       /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
-      'Le slug doit contenir uniquement des lettres minuscules, chiffres et tirets'
+      'Slug must contain only lowercase letters, numbers and hyphens'
     ),
   description: z
     .string()
-    .max(500, 'La description ne peut pas dépasser 500 caractères')
+    .max(500, 'Description cannot exceed 500 characters')
     .optional(),
   color: z.string().optional().default('#3B82F6'),
   createdAt: z.string().optional(),
@@ -31,18 +31,18 @@ export type CategoryFormData = z.infer<typeof categorySchema>
 
 // Admin configuration for categories
 export const categoryAdminConfig = {
-  title: 'Catégories',
+  title: 'Categories',
   entity: 'category',
   service: categoryService,
   schema: categorySchema,
   fields: [
-    { key: 'id', label: 'ID', type: 'text' as const, readonly: true },
-    { key: 'name', label: 'Nom', type: 'text' as const, required: true },
-    { key: 'slug', label: 'Slug', type: 'text' as const, required: true },
-    { key: 'description', label: 'Description', type: 'textarea' as const },
-    { key: 'color', label: 'Couleur', type: 'text' as const },
-    { key: 'createdAt', label: 'Créé le', type: 'date' as const, readonly: true },
-    { key: 'updatedAt', label: 'Modifié le', type: 'date' as const, readonly: true },
+    { key: 'id', label: 'ID', type: 'text' as const, readonly: true, display: { showInForm: false } },
+    { key: 'name', label: 'Name', type: 'text' as const, required: true, display: { showInForm: true, order: 1 } },
+    { key: 'slug', label: 'Slug', type: 'text' as const, required: true, display: { showInForm: true, order: 2 } },
+    { key: 'description', label: 'Description', type: 'textarea' as const, display: { showInForm: true, order: 3 } },
+    { key: 'color', label: 'Color', type: 'text' as const, display: { showInForm: true, order: 4 } },
+    { key: 'createdAt', label: 'Created At', type: 'date' as const, readonly: true, display: { showInForm: false } },
+    { key: 'updatedAt', label: 'Updated At', type: 'date' as const, readonly: true, display: { showInForm: false } },
   ],
   actions: {
     create: true,
@@ -62,13 +62,4 @@ export const categoryAdminConfig = {
   queryKey: ['categories'],
   formFields: ['name', 'slug', 'description', 'color'],
   children: [],
-  ui: {
-    createButton: 'Nouvelle catégorie',
-    editButton: 'Modifier',
-    deleteButton: 'Supprimer',
-    createTitle: 'Créer une catégorie',
-    editTitle: 'Modifier la catégorie',
-    deleteTitle: 'Supprimer la catégorie',
-    deleteConfirmation: 'Êtes-vous sûr de vouloir supprimer cette catégorie ?',
-  },
 }
