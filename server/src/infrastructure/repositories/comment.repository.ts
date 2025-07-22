@@ -2,7 +2,6 @@ import { eq } from 'drizzle-orm'
 import type { Answer } from '@/domain/models/answer.model'
 import type { Comment } from '@/domain/models/comment.model'
 import type { Question } from '@/domain/models/question.model'
-import type { User } from '@/domain/models/user.model'
 import type { CommentRepositoryInterface } from '@/domain/repositories/comment.repository.interface'
 import { db } from '../database/db/index'
 import { users } from '../database/schema'
@@ -60,6 +59,23 @@ export class CommentRepository implements CommentRepositoryInterface {
     const createdAt = new Date()
     await db.insert(comments).values({ ...data, id, createdAt })
     return { ...data, id, createdAt }
+  }
+
+  async update(id: string, data: Partial<Omit<Comment, 'id' | 'createdAt'>>): Promise<Comment> {
+    const result = await db
+      .update(comments)
+      .set({ ...data })
+      .where(eq(comments.id, id))
+      .returning()
+    if (result.length === 0) throw new Error('Comment not found')
+    const c = result[0]
+    return {
+      id: c.id,
+      body: c.body,
+      userId: c.userId ?? null,
+      answerId: c.answerId ?? null,
+      createdAt: c.createdAt ?? null
+    }
   }
 
   async delete(id: string): Promise<boolean> {
