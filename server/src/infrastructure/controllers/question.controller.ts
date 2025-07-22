@@ -1,0 +1,216 @@
+import { createRoute, OpenAPIHono } from '@hono/zod-openapi'
+import { z } from 'zod'
+import { CreateQuestionUseCase } from '@/application/use-cases/question/create-question.use-case'
+import { DeleteQuestionUseCase } from '@/application/use-cases/question/delete-question.use-case'
+import { FindAllQuestionsUseCase } from '@/application/use-cases/question/find-all-questions.use-case'
+import { FindQuestionUseCase } from '@/application/use-cases/question/find-question.use-case'
+import { UpdateQuestionUseCase } from '@/application/use-cases/question/update-question.use-case'
+import type { Routes } from '@/domain/types'
+import { QuestionRepository } from '../repositories/question.repository'
+
+const questionRepository = new QuestionRepository()
+const createQuestion = new CreateQuestionUseCase(questionRepository)
+const findQuestion = new FindQuestionUseCase(questionRepository)
+const findAllQuestions = new FindAllQuestionsUseCase(questionRepository)
+const updateQuestion = new UpdateQuestionUseCase(questionRepository)
+const deleteQuestion = new DeleteQuestionUseCase(questionRepository)
+
+export class QuestionController implements Routes {
+  public controller: OpenAPIHono
+
+  constructor() {
+    this.controller = new OpenAPIHono()
+    this.initRoutes()
+  }
+
+  public initRoutes() {
+    this.controller.openapi(
+      createRoute({
+        method: 'get',
+        path: '/v1/questions',
+        tags: ['Questions'],
+        summary: 'List questions',
+        request: {
+          query: z.object({
+            skip: z.string().optional(),
+            limit: z.string().optional()
+          })
+        },
+        responses: {
+          200: {
+            description: 'List of questions',
+            content: {
+              'application/json': {
+                schema: z.object({
+                  success: z.boolean(),
+                  data: z.array(z.any())
+                })
+              }
+            }
+          }
+        }
+      }),
+      async (c) => {
+        const { skip = '0', limit = '20' } = c.req.query()
+        const result = await findAllQuestions.execute({ skip: Number(skip), limit: Number(limit) })
+        return c.json(result)
+      }
+    )
+
+    this.controller.openapi(
+      createRoute({
+        method: 'get',
+        path: '/v1/questions/{id}',
+        tags: ['Questions'],
+        summary: 'Get question by id',
+        request: {
+          params: z.object({ id: z.string() })
+        },
+        responses: {
+          200: {
+            description: 'Question found',
+            content: {
+              'application/json': {
+                schema: z.object({
+                  success: z.boolean(),
+                  data: z.any().nullable()
+                })
+              }
+            }
+          }
+        }
+      }),
+      async (c) => {
+        const { id } = c.req.param()
+        const result = await findQuestion.execute(id)
+        return c.json(result)
+      }
+    )
+
+    this.controller.openapi(
+      createRoute({
+        method: 'post',
+        path: '/v1/questions',
+        tags: ['Questions'],
+        summary: 'Create question',
+        request: {
+          body: {
+            content: {
+              'application/json': {
+                schema: z.object({
+                  title: z.string(),
+                  body: z.string(),
+                  topicId: z.string()
+                })
+              }
+            }
+          }
+        },
+        responses: {
+          201: {
+            description: 'Question created',
+            content: {
+              'application/json': {
+                schema: z.object({
+                  success: z.boolean(),
+                  data: z.any()
+                })
+              }
+            }
+          }
+        }
+      }),
+      async (c: any) => {
+        const userId = c.get('user')
+        if (!userId) return c.json({ success: false, error: 'Unauthorized' })
+        const input = await c.req.json()
+        const result = await createQuestion.execute({ ...input, userId })
+        return c.json(result, 201)
+      }
+    )
+
+    this.controller.openapi(
+      createRoute({
+        method: 'put',
+        path: '/v1/questions/{id}',
+        tags: ['Questions'],
+        summary: 'Update question',
+        request: {
+          params: z.object({ id: z.string() }),
+          body: {
+            content: {
+              'application/json': {
+                schema: z.object({
+                  title: z.string().optional(),
+                  body: z.string().optional(),
+                  topicId: z.string().optional()
+                })
+              }
+            }
+          }
+        },
+        responses: {
+          200: {
+            description: 'Question updated',
+            content: {
+              'application/json': {
+                schema: z.object({
+                  success: z.boolean(),
+                  data: z.any().nullable()
+                })
+              }
+            }
+          }
+        }
+      }),
+      async (c: any) => {
+        const userId = c.get('user')
+        if (!userId) return c.json({ success: false, error: 'Unauthorized' })
+        const { id } = c.req.param()
+        const question = await findQuestion.execute(id)
+        if (!question.success || !question.data || question.data.user?.id !== userId) {
+          return c.json({ success: false, error: 'Forbidden' })
+        }
+        const input = await c.req.json()
+        const result = await updateQuestion.execute(id, input)
+        return c.json(result)
+      }
+    )
+
+    this.controller.openapi(
+      createRoute({
+        method: 'delete',
+        path: '/v1/questions/{id}',
+        tags: ['Questions'],
+        summary: 'Delete question',
+        request: {
+          params: z.object({ id: z.string() })
+        },
+        responses: {
+          200: {
+            description: 'Question deleted',
+            content: {
+              'application/json': {
+                schema: z.object({
+                  success: z.boolean(),
+                  error: z.string().optional()
+                })
+              }
+            }
+          }
+        }
+      }),
+      async (c: any) => {
+        const userId = c.get('user')
+        if (!userId) return c.json({ success: false, error: 'Unauthorized' })
+        const { id } = c.req.param()
+        const question = await findQuestion.execute(id)
+        if (!question.success || !question.data || question.data.user?.id !== userId) {
+          return c.json({ success: false, error: 'Forbidden' })
+        }
+        const result = await deleteQuestion.execute(id)
+        return c.json(result)
+      }
+    )
+  }
+}

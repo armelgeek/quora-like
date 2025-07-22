@@ -7,12 +7,15 @@ type EnrichedComment = Comment & { user: any | null; answer: (Answer & { questio
 export class UpdateCommentUseCase {
   constructor(private readonly commentRepository: CommentRepositoryInterface) {}
 
-  async execute(id: string, data: Partial<Omit<Comment, 'id' | 'createdAt'>>): Promise<{ success: boolean; data?: EnrichedComment; error?: string }> {
+  async execute(
+    id: string,
+    data: Partial<Omit<Comment, 'id' | 'createdAt'>>
+  ): Promise<{ success: boolean; data?: EnrichedComment; error?: string }> {
     try {
       await this.commentRepository.update(id, data)
       const comment = await this.commentRepository.findById(id)
-      if (comment) {
-        return { success: true, data: comment }
+      if (comment && 'user' in comment && 'answer' in comment) {
+        return { success: true, data: comment as EnrichedComment }
       }
       return { success: false, error: 'Not found' }
     } catch (error: any) {
