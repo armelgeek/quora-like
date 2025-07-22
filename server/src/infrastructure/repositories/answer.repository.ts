@@ -1,3 +1,4 @@
+// ...existing code...
 import { eq } from 'drizzle-orm'
 import type { Answer } from '@/domain/models/answer.model'
 import type { Question } from '@/domain/models/question.model'
@@ -9,6 +10,32 @@ import { answers, questions } from '../database/schema/quora.schema'
 import { VoteRepository } from './vote.repository'
 
 export class AnswerRepository implements AnswerRepositoryInterface {
+  async findByParentAnswer(
+    parentAnswerId: string,
+    pagination?: { skip: number; limit: number }
+  ): Promise<(Answer & { question: Question | null; user: UserType | null; votesCount: number })[]> {
+    const { skip = 0, limit = 20 } = pagination || {}
+    const results = await db
+      .select({
+        answer: answers,
+        question: questions,
+        user: users
+      })
+      .from(answers)
+      .leftJoin(questions, eq(answers.questionId, questions.id))
+      .leftJoin(users, eq(answers.userId, users.id))
+      .where(eq(answers.parentAnswerId, parentAnswerId))
+      .offset(skip)
+      .limit(limit)
+    const voteRepo = new VoteRepository()
+    return Promise.all(
+      results.map(async (row) => {
+        const base = this.mapWithQuestionAndUser(row)
+        const votesCount = await voteRepo.getVoteCountByAnswer(base.id)
+        return { ...base, votesCount }
+      })
+    )
+  }
   async findById(
     id: string
   ): Promise<(Answer & { question: Question | null; user: UserType | null; votesCount: number }) | null> {
@@ -56,10 +83,10 @@ export class AnswerRepository implements AnswerRepositoryInterface {
   }
 
   async create(data: Omit<Answer, 'id' | 'createdAt' | 'updatedAt'>): Promise<Answer> {
-    const id = crypto.randomUUID()
-    const now = new Date()
-    await db.insert(answers).values({ ...data, id, createdAt: now, updatedAt: now })
-    return { ...data, id, createdAt: now, updatedAt: now }
+  const id = crypto.randomUUID()
+  const now = new Date()
+  await db.insert(answers).values({ ...data, id, createdAt: now, updatedAt: now })
+  return { ...data, id, createdAt: now, updatedAt: now }
   }
 
   async update(
@@ -161,6 +188,7 @@ export class AnswerRepository implements AnswerRepositoryInterface {
       body: a.body,
       questionId: a.questionId ?? a.question_id,
       userId: a.userId ?? a.user_id,
+      parentAnswerId: a.parentAnswerId ?? a.parent_answer_id ?? null,
       createdAt: a.createdAt ?? a.created_at,
       updatedAt: a.updatedAt ?? a.updated_at,
       question: q

@@ -35,7 +35,8 @@ export class AnswerController implements Routes {
           query: z.object({
             skip: z.string().optional(),
             limit: z.string().optional(),
-            questionId: z.string().optional()
+            questionId: z.string().optional(),
+            parentAnswerId: z.string().optional()
           })
         },
         responses: {
@@ -53,7 +54,11 @@ export class AnswerController implements Routes {
         }
       }),
       async (c) => {
-        const { skip = '0', limit = '20', questionId } = c.req.query()
+        const { skip = '0', limit = '20', questionId, parentAnswerId } = c.req.query()
+        if (parentAnswerId) {
+          const children = await answerRepository.findByParentAnswer(parentAnswerId, { skip: Number(skip), limit: Number(limit) })
+          return c.json({ success: true, data: children })
+        }
         const result = await findAllAnswers.execute({
           skip: Number(skip),
           limit: Number(limit),

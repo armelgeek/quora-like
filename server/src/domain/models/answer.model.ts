@@ -5,6 +5,7 @@ export const AnswerSchema = z.object({
   body: z.string().min(1),
   questionId: z.string().uuid(),
   userId: z.string().uuid(),
+  parentAnswerId: z.string().uuid().nullable().optional(),
   createdAt: z.date(),
   updatedAt: z.date()
 })

@@ -5,6 +5,7 @@ export const AnswerSchema = z.object({
   body: z.string().min(1, 'Le contenu est requis'),
   questionId: z.string().uuid(),
   userId: z.string().uuid(),
+  parentAnswerId: z.string().uuid().nullable().optional(),
   createdAt: z.date(),
   updatedAt: z.date()
 })
@@ -26,4 +27,4 @@ export type Answer = z.infer<typeof AnswerSchema> & {
   user?: UserType | null
   votesCount?: number
 }
-export type AnswerPayload = Pick<Answer, 'body' | 'questionId' | 'userId'>
+export type AnswerPayload = Pick<Answer, 'body' | 'questionId' | 'userId' | 'parentAnswerId'>

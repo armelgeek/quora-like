@@ -2,8 +2,9 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AnswerSchema, AnswerPayload } from '@/features/answer/answer.schema'
 import { useCreateAnswer, useAnswers } from '@/features/answer/hooks/use-answer'
-import { useAnswerVote } from '@/features/vote/hooks/use-answer-vote'
 import { useSession } from '@/shared/hooks/use-session-info'
+import { AnswerThread } from './answer-thread'
+
 
 export function AnswerForm({ questionId }: { questionId: string }) {
   const { session } = useSession()
@@ -32,47 +33,15 @@ export function AnswerForm({ questionId }: { questionId: string }) {
     </form>
   )
 }
-
-
 export function AnswersList({ questionId }: { questionId: string }) {
   const { data, isLoading } = useAnswers(questionId)
-  const { upvoteAnswer, downvoteAnswer } = useAnswerVote()
   if (isLoading) return <div className="text-xs text-gray-400">Chargement des réponses...</div>
   if (!data || data.length === 0) return <div className="text-xs text-gray-400">Aucune réponse</div>
   return (
-    <ul className="mt-2 space-y-1">
-      {data.map((a) => (
-        <li key={a.id} className="bg-gray-50 rounded px-2 py-1 text-sm flex items-center gap-2">
-          <div className="flex-1">
-            <div className="font-medium text-gray-800">{a.body}</div>
-            <div className="text-xs text-gray-500 flex items-center gap-2">
-              {a.user ? (
-                <span>
-                  {a.user.firstname || a.user.lastname
-                    ? `${a.user.firstname ?? ''} ${a.user.lastname ?? ''}`.trim()
-                    : a.user.name || a.user.email || 'Utilisateur'}
-                </span>
-              ) : (
-                <span>Utilisateur</span>
-              )}
-              <span>•</span>
-              <span>{typeof a.votesCount === 'number' ? `${a.votesCount} vote${a.votesCount > 1 ? 's' : ''}` : '0 vote'}</span>
-            </div>
-          </div>
-          <button
-            aria-label="Upvote answer"
-            className="px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200"
-            onClick={() => upvoteAnswer.mutate({ answerId: a.id, questionId })}
-            disabled={upvoteAnswer.isPending}
-          >▲</button>
-          <button
-            aria-label="Downvote answer"
-            className="px-2 py-1 rounded bg-red-100 text-red-700 hover:bg-red-200"
-            onClick={() => downvoteAnswer.mutate({ answerId: a.id, questionId })}
-            disabled={downvoteAnswer.isPending}
-          >▼</button>
-        </li>
+    <div className="mt-2 space-y-1">
+      {data.filter(a => !a.parentAnswerId).map(a => (
+        <AnswerThread key={a.id} answer={a} questionId={questionId} />
       ))}
-    </ul>
+    </div>
   )
 }

@@ -8,4 +8,5 @@ export interface AnswerRepositoryInterface {
   delete: (id: string) => Promise<boolean>
   findByQuestion: (questionId: string, pagination?: { skip: number; limit: number }) => Promise<Answer[]>
   findByUser: (userId: string, pagination?: { skip: number; limit: number }) => Promise<Answer[]>
+  findByParentAnswer: (parentAnswerId: string, pagination?: { skip: number; limit: number }) => Promise<Answer[]>
 }
