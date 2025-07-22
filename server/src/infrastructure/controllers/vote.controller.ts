@@ -89,20 +89,11 @@ export class VoteController implements Routes {
     this.controller.openapi(
       createRoute({
         method: 'post',
-        path: '/v1/votes',
+        path: '/v1/votes/up/:questionId',
         tags: ['Votes'],
-        summary: 'Create vote',
+        summary: 'Upvote a question',
         request: {
-          body: {
-            content: {
-              'application/json': {
-                schema: z.object({
-                  answerId: z.string(),
-                  value: z.number()
-                })
-              }
-            }
-          }
+          params: z.object({ questionId: z.string() })
         },
         responses: {
           201: {
@@ -119,10 +110,121 @@ export class VoteController implements Routes {
         }
       }),
       async (c: any) => {
-        const userId = c.get('user')
-        if (!userId) return c.json({ success: false, error: 'Unauthorized' })
-        const input = await c.req.json()
-        const result = await createVote.execute({ ...input, userId })
+        const user = c.get('user')
+        if (!user) return c.json({ success: false, error: 'Unauthorized' })
+        const { questionId } = c.req.param()
+        const result = await createVote.execute({ questionId, value: 1, userId: user.id })
+        if (!result.success && result.error?.includes('déjà voté')) {
+          return c.json({ success: false, error: result.error }, 400)
+        }
+        return c.json(result, 201)
+      }
+    )
+
+    // Vote down on a question
+    this.controller.openapi(
+      createRoute({
+        method: 'post',
+        path: '/v1/votes/down/:questionId',
+        tags: ['Votes'],
+        summary: 'Downvote a question',
+        request: {
+          params: z.object({ questionId: z.string() })
+        },
+        responses: {
+          201: {
+            description: 'Vote created',
+            content: {
+              'application/json': {
+                schema: z.object({
+                  success: z.boolean(),
+                  data: z.any()
+                })
+              }
+            }
+          }
+        }
+      }),
+      async (c: any) => {
+        const user = c.get('user')
+        if (!user) return c.json({ success: false, error: 'Unauthorized' })
+        const { questionId } = c.req.param()
+        const result = await createVote.execute({ questionId, value: 0, userId: user.id })
+        if (!result.success && result.error?.includes('déjà voté')) {
+          return c.json({ success: false, error: result.error }, 400)
+        }
+        return c.json(result, 201)
+      }
+    )
+
+    // Vote up on an answer
+    this.controller.openapi(
+      createRoute({
+        method: 'post',
+        path: '/v1/votes/upa/:answerId',
+        tags: ['Votes'],
+        summary: 'Upvote an answer',
+        request: {
+          params: z.object({ answerId: z.string() })
+        },
+        responses: {
+          201: {
+            description: 'Vote created',
+            content: {
+              'application/json': {
+                schema: z.object({
+                  success: z.boolean(),
+                  data: z.any()
+                })
+              }
+            }
+          }
+        }
+      }),
+      async (c: any) => {
+        const user = c.get('user')
+        if (!user) return c.json({ success: false, error: 'Unauthorized' })
+        const { answerId } = c.req.param()
+        const result = await createVote.execute({ answerId, value: 1, userId: user.id })
+        if (!result.success && result.error?.includes('déjà voté')) {
+          return c.json({ success: false, error: result.error }, 400)
+        }
+        return c.json(result, 201)
+      }
+    )
+
+    // Vote down on an answer
+    this.controller.openapi(
+      createRoute({
+        method: 'post',
+        path: '/v1/votes/downa/:answerId',
+        tags: ['Votes'],
+        summary: 'Downvote an answer',
+        request: {
+          params: z.object({ answerId: z.string() })
+        },
+        responses: {
+          201: {
+            description: 'Vote created',
+            content: {
+              'application/json': {
+                schema: z.object({
+                  success: z.boolean(),
+                  data: z.any()
+                })
+              }
+            }
+          }
+        }
+      }),
+      async (c: any) => {
+        const user = c.get('user')
+        if (!user) return c.json({ success: false, error: 'Unauthorized' })
+        const { answerId } = c.req.param()
+        const result = await createVote.execute({ answerId, value: 0, userId: user.id })
+        if (!result.success && result.error?.includes('déjà voté')) {
+          return c.json({ success: false, error: result.error }, 400)
+        }
         return c.json(result, 201)
       }
     )
@@ -151,11 +253,11 @@ export class VoteController implements Routes {
         }
       }),
       async (c: any) => {
-        const userId = c.get('user')
-        if (!userId) return c.json({ success: false, error: 'Unauthorized' })
+        const user = c.get('user')
+        if (!user) return c.json({ success: false, error: 'Unauthorized' })
         const { id } = c.req.param()
         const vote = await findVote.execute(id)
-        if (!vote.success || !vote.data || vote.data.userId !== userId) {
+        if (!vote.success || !vote.data || vote.data.userId !== user.id) {
           return c.json({ success: false, error: 'Forbidden' })
         }
         const result = await deleteVote.execute(id)

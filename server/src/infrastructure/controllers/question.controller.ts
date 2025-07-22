@@ -121,10 +121,10 @@ export class QuestionController implements Routes {
         }
       }),
       async (c: any) => {
-        const userId = c.get('user')
-        if (!userId) return c.json({ success: false, error: 'Unauthorized' })
+        const user = c.get('user')
+        if (!user) return c.json({ success: false, error: 'Unauthorized' })
         const input = await c.req.json()
-        const result = await createQuestion.execute({ ...input, userId })
+        const result = await createQuestion.execute({ ...input, userId: user.id })
         return c.json(result, 201)
       }
     )
@@ -164,11 +164,11 @@ export class QuestionController implements Routes {
         }
       }),
       async (c: any) => {
-        const userId = c.get('user')
-        if (!userId) return c.json({ success: false, error: 'Unauthorized' })
+        const user = c.get('user')
+        if (!user) return c.json({ success: false, error: 'Unauthorized' })
         const { id } = c.req.param()
         const question = await findQuestion.execute(id)
-        if (!question.success || !question.data || question.data.user?.id !== userId) {
+        if (!question.success || !question.data || question.data.user?.id !== user.id) {
           return c.json({ success: false, error: 'Forbidden' })
         }
         const input = await c.req.json()
@@ -201,11 +201,11 @@ export class QuestionController implements Routes {
         }
       }),
       async (c: any) => {
-        const userId = c.get('user')
-        if (!userId) return c.json({ success: false, error: 'Unauthorized' })
+        const user = c.get('user')
+        if (!user) return c.json({ success: false, error: 'Unauthorized' })
         const { id } = c.req.param()
         const question = await findQuestion.execute(id)
-        if (!question.success || !question.data || question.data.user?.id !== userId) {
+        if (!question.success || !question.data || question.data.user?.id !== user.id) {
           return c.json({ success: false, error: 'Forbidden' })
         }
         const result = await deleteQuestion.execute(id)

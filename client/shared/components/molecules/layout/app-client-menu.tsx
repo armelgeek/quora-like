@@ -62,7 +62,12 @@ const AppClientMenu = () => {
       </div>
 
       <div className="flex items-center gap-2 min-w-[120px] justify-end">
-        <div className="hidden md:block w-36">{ctaButton()}</div>
+        <div className="hidden md:flex gap-2 items-center">
+          <Button asChild variant="outline" className="rounded-full px-5 py-2 font-semibold">
+            <Link href="/question/create">Poser une question</Link>
+          </Button>
+          <div className="w-36">{ctaButton()}</div>
+        </div>
         <button
           className="md:hidden inline-flex items-center justify-center p-2 rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-primary"
           aria-label={mobileOpen ? "Fermer le menu" : "Ouvrir le menu"}
@@ -117,6 +122,9 @@ const AppClientMenu = () => {
                   </NavLink>
                 </div>
               ))}
+              <Button asChild variant="outline" className="rounded-full px-5 py-2 font-semibold mt-2">
+                <Link href="/question/create">Poser une question</Link>
+              </Button>
             </div>
             <div className="mt-6 w-full">{ctaButton()}</div>
           </div>

@@ -12,7 +12,7 @@ export default async function BaseLayout({ children }: RootLayoutProps) {
   return (
     <div>
       <AppClientMenu />
-      <main>
+      <main className="flex flex-col min-h-screen px-48">
         {children}
       </main>
       <Footer />

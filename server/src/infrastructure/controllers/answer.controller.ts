@@ -34,7 +34,8 @@ export class AnswerController implements Routes {
         request: {
           query: z.object({
             skip: z.string().optional(),
-            limit: z.string().optional()
+            limit: z.string().optional(),
+            questionId: z.string().optional()
           })
         },
         responses: {
@@ -52,8 +53,12 @@ export class AnswerController implements Routes {
         }
       }),
       async (c) => {
-        const { skip = '0', limit = '20' } = c.req.query()
-        const result = await findAllAnswers.execute({ skip: Number(skip), limit: Number(limit) })
+        const { skip = '0', limit = '20', questionId } = c.req.query()
+        const result = await findAllAnswers.execute({
+          skip: Number(skip),
+          limit: Number(limit),
+          questionId: questionId || undefined
+        })
         return c.json(result)
       }
     )
@@ -121,10 +126,10 @@ export class AnswerController implements Routes {
         }
       }),
       async (c: any) => {
-        const userId = c.get('user')
-        if (!userId) return c.json({ success: false, error: 'Unauthorized' })
+        const user = c.get('user')
+        if (!user) return c.json({ success: false, error: 'Unauthorized' })
         const input = await c.req.json()
-        const result = await createAnswer.execute({ ...input, userId })
+        const result = await createAnswer.execute({ ...input, userId: user.id })
         return c.json(result, 201)
       }
     )
@@ -162,11 +167,11 @@ export class AnswerController implements Routes {
         }
       }),
       async (c: any) => {
-        const userId = c.get('user')
-        if (!userId) return c.json({ success: false, error: 'Unauthorized' })
+        const user = c.get('user')
+        if (!user) return c.json({ success: false, error: 'Unauthorized' })
         const { id } = c.req.param()
         const answer = await findAnswer.execute(id)
-        if (!answer.success || !answer.data || answer.data.user?.id !== userId) {
+        if (!answer.success || !answer.data || answer.data.user?.id !== user.id) {
           return c.json({ success: false, error: 'Forbidden' })
         }
         const input = await c.req.json()
@@ -199,11 +204,11 @@ export class AnswerController implements Routes {
         }
       }),
       async (c: any) => {
-        const userId = c.get('user')
-        if (!userId) return c.json({ success: false, error: 'Unauthorized' })
+        const user = c.get('user')
+        if (!user) return c.json({ success: false, error: 'Unauthorized' })
         const { id } = c.req.param()
         const answer = await findAnswer.execute(id)
-        if (!answer.success || !answer.data || answer.data.user?.id !== userId) {
+        if (!answer.success || !answer.data || answer.data.user?.id !== user.id) {
           return c.json({ success: false, error: 'Forbidden' })
         }
         const result = await deleteAnswer.execute(id)

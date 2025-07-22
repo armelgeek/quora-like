@@ -120,10 +120,10 @@ export class TopicController implements Routes {
         }
       }),
       async (c: any) => {
-        const userId = c.get('user')
-        if (!userId) return c.json({ success: false, error: 'Unauthorized' })
+        const user = c.get('user')
+        if (!user) return c.json({ success: false, error: 'Unauthorized' })
         const input = await c.req.json()
-        const result = await createTopic.execute({ ...input, userId })
+        const result = await createTopic.execute({ ...input, userId: user.id })
         return c.json(result, 201)
       }
     )
@@ -162,8 +162,8 @@ export class TopicController implements Routes {
         }
       }),
       async (c: any) => {
-        const userId = c.get('user')
-        if (!userId) return c.json({ success: false, error: 'Unauthorized' })
+        const user = c.get('user')
+        if (!user) return c.json({ success: false, error: 'Unauthorized' })
         const { id } = c.req.param()
         const topic = await findTopic.execute(id)
         if (!topic.success || !topic.data) {
@@ -199,8 +199,8 @@ export class TopicController implements Routes {
         }
       }),
       async (c: any) => {
-        const userId = c.get('user')
-        if (!userId) return c.json({ success: false, error: 'Unauthorized' })
+        const user = c.get('user')
+        if (!user) return c.json({ success: false, error: 'Unauthorized' })
         const { id } = c.req.param()
         const topic = await findTopic.execute(id)
         if (!topic.success || !topic.data) {

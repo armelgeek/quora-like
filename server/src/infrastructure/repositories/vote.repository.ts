@@ -5,6 +5,17 @@ import { db } from '../database/db/index'
 import { votes } from '../database/schema/quora.schema'
 
 export class VoteRepository implements VoteRepositoryInterface {
+  async update(id: string, data: Partial<Omit<Vote, 'id' | 'createdAt'>>): Promise<Vote> {
+    await db
+      .update(votes)
+      .set({ ...data })
+      .where(eq(votes.id, id))
+    const updated = await db.select().from(votes).where(eq(votes.id, id)).limit(1)
+    if (!updated.length) {
+      throw new Error('Vote not found')
+    }
+    return this.map(updated[0])
+  }
   async findById(id: string): Promise<Vote | null> {
     const result = await db.select().from(votes).where(eq(votes.id, id)).limit(1)
     return result.length ? this.map(result[0]) : null
@@ -19,7 +30,16 @@ export class VoteRepository implements VoteRepositoryInterface {
   async create(data: Omit<Vote, 'id' | 'createdAt'>): Promise<Vote> {
     const id = crypto.randomUUID()
     const createdAt = new Date()
-    await db.insert(votes).values({ ...data, id, createdAt })
+    // On ne garde que la clé concernée (questionId ou answerId)
+    const insertData: any = {
+      id,
+      userId: data.userId,
+      value: data.value,
+      createdAt
+    }
+    if (data.questionId) insertData.questionId = data.questionId
+    if (data.answerId) insertData.answerId = data.answerId
+    await db.insert(votes).values(insertData)
     return { ...data, id, createdAt }
   }
 
@@ -35,23 +55,34 @@ export class VoteRepository implements VoteRepositoryInterface {
     return results.map(this.map)
   }
 
+  async findByQuestion(questionId: string): Promise<Vote[]> {
+    const results = await db.select().from(votes).where(eq(votes.questionId, questionId))
+    return results.map(this.map)
+  }
+
   async findByUser(userId: string): Promise<Vote[]> {
     const results = await db.select().from(votes).where(eq(votes.userId, userId))
     return results.map(this.map)
   }
 
-  async getVoteCount(answerId: string): Promise<number> {
+  async getVoteCountByAnswer(answerId: string): Promise<number> {
     const results = await db.select().from(votes).where(eq(votes.answerId, answerId))
+    return results.reduce((acc: number, v: any) => acc + v.value, 0)
+  }
+
+  async getVoteCountByQuestion(questionId: string): Promise<number> {
+    const results = await db.select().from(votes).where(eq(votes.questionId, questionId))
     return results.reduce((acc: number, v: any) => acc + v.value, 0)
   }
 
   private map(row: any): Vote {
     return {
       id: row.id,
-      userId: row.user_id,
-      answerId: row.answer_id,
+      userId: row.userId,
+      questionId: row.questionId ?? undefined,
+      answerId: row.answerId ?? undefined,
       value: row.value,
-      createdAt: row.created_at
+      createdAt: row.createdAt
     }
   }
 }

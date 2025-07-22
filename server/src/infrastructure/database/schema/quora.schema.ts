@@ -38,9 +38,8 @@ export const votes = pgTable('votes', {
   userId: text('user_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
-  answerId: text('answer_id')
-    .notNull()
-    .references(() => answers.id, { onDelete: 'cascade' }),
+  questionId: text('question_id').references(() => questions.id, { onDelete: 'cascade' }),
+  answerId: text('answer_id').references(() => answers.id, { onDelete: 'cascade' }),
   value: integer('value').notNull(), // +1 ou -1
   createdAt: timestamp('created_at').defaultNow().notNull()
 })

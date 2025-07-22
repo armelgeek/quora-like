@@ -1,11 +1,12 @@
-import { eq } from 'drizzle-orm'
+import { eq, sql } from 'drizzle-orm'
 import type { Question } from '@/domain/models/question.model'
 import type { Topic } from '@/domain/models/topic.model'
 import type { UserType } from '@/domain/models/user.model'
 import type { QuestionRepositoryInterface } from '@/domain/repositories/question.repository.interface'
 import { db } from '../database/db/index'
 import { users } from '../database/schema'
-import { questions, topics } from '../database/schema/quora.schema'
+import { answers, questions, topics, votes } from '../database/schema/quora.schema'
+import { VoteRepository } from './vote.repository'
 
 export class QuestionRepository implements QuestionRepositoryInterface {
   async findById(id: string): Promise<(Question & { user: UserType | null; topic: Topic | null }) | null> {
@@ -27,20 +28,56 @@ export class QuestionRepository implements QuestionRepositoryInterface {
   async findAll(pagination?: {
     skip: number
     limit: number
-  }): Promise<(Question & { user: UserType | null; topic: Topic | null })[]> {
+  }): Promise<(Question & { user: UserType | null; topic: Topic | null; answersCount: number; votesCount: number })[]> {
     const { skip = 0, limit = 20 } = pagination || {}
+    // On récupère les questions avec user, topic, answersCount
     const results = await db
       .select({
         question: questions,
         user: users,
-        topic: topics
+        topic: topics,
+        answersCount: sql`(
+          SELECT COUNT(*) FROM answers WHERE answers.question_id = questions.id
+        )`.as('answers_count')
       })
       .from(questions)
       .leftJoin(users, eq(questions.userId, users.id))
       .leftJoin(topics, eq(questions.topicId, topics.id))
       .offset(skip)
       .limit(limit)
-    return results.map(this.mapWithUserTopic)
+
+    const voteRepository = new VoteRepository()
+    const votesCounts: number[] = await Promise.all(
+      results.map((row) => voteRepository.getVoteCountByQuestion(row.question.id))
+    )
+
+    return results.map((row, i) => {
+      const base = this.mapWithUserTopic({
+        question: row.question,
+        user: row.user,
+        topic: row.topic
+      })
+      return {
+        ...base,
+        answersCount: Number(row.answersCount ?? 0),
+        votesCount: voteRepository ? votesCounts[i] : 0
+      }
+    })
+  }
+
+  private mapWithUserTopicAndCounts = (row: {
+    question: any
+    user: any
+    topic: any
+    answersCount: any
+    votesCount: any
+  }): Question & { user: UserType | null; topic: Topic | null; answersCount: number; votesCount: number } => {
+    const base = this.mapWithUserTopic(row)
+    return {
+      ...base,
+      answersCount: Number(row.answersCount ?? 0),
+      votesCount: Number(row.votesCount ?? 0)
+    }
   }
 
   async create(data: Omit<Question, 'id' | 'createdAt' | 'updatedAt'>): Promise<Question> {

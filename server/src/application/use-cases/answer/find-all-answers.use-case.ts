@@ -6,12 +6,21 @@ type EnrichedAnswer = Answer & { user: any | null; question: Question | null }
 export class FindAllAnswersUseCase {
   constructor(private readonly answerRepository: AnswerRepositoryInterface) {}
 
-  async execute(pagination: {
+  async execute(params: {
     skip: number
     limit: number
+    questionId?: string
   }): Promise<{ success: boolean; data: EnrichedAnswer[]; error?: string }> {
     try {
-      const answers = await this.answerRepository.findAll(pagination)
+      let answers: any[]
+      if (params.questionId) {
+        answers = await this.answerRepository.findByQuestion(params.questionId, {
+          skip: params.skip,
+          limit: params.limit
+        })
+      } else {
+        answers = await this.answerRepository.findAll({ skip: params.skip, limit: params.limit })
+      }
       return {
         success: true,
         data: answers.map((answer) => ({

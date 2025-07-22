@@ -121,10 +121,10 @@ export class CommentController implements Routes {
         }
       }),
       async (c: any) => {
-        const userId = c.get('user')
-        if (!userId) return c.json({ success: false, error: 'Unauthorized' })
+        const user = c.get('user')
+        if (!user) return c.json({ success: false, error: 'Unauthorized' })
         const input = await c.req.json()
-        const result = await createComment.execute({ ...input, userId })
+        const result = await createComment.execute({ ...input, userId: user.id })
         return c.json(result, 201)
       }
     )
@@ -162,11 +162,11 @@ export class CommentController implements Routes {
         }
       }),
       async (c: any) => {
-        const userId = c.get('user')
-        if (!userId) return c.json({ success: false, error: 'Unauthorized' })
+        const user = c.get('user')
+        if (!user) return c.json({ success: false, error: 'Unauthorized' })
         const { id } = c.req.param()
         const comment = await findComment.execute(id)
-        if (!comment.success || !comment.data || comment.data.user?.id !== userId) {
+        if (!comment.success || !comment.data || comment.data.user?.id !== user.id) {
           return c.json({ success: false, error: 'Forbidden' })
         }
         const input = await c.req.json()
@@ -199,11 +199,11 @@ export class CommentController implements Routes {
         }
       }),
       async (c: any) => {
-        const userId = c.get('user')
-        if (!userId) return c.json({ success: false, error: 'Unauthorized' })
+        const user = c.get('user')
+        if (!user) return c.json({ success: false, error: 'Unauthorized' })
         const { id } = c.req.param()
         const comment = await findComment.execute(id)
-        if (!comment.success || !comment.data || comment.data.user?.id !== userId) {
+        if (!comment.success || !comment.data || comment.data.user?.id !== user.id) {
           return c.json({ success: false, error: 'Forbidden' })
         }
         const result = await deleteComment.execute(id)

@@ -47,13 +47,13 @@ export const CLIENT_MENU_ITEMS: NavItem[] = [
     url: "/",
   },
   {
-    title: "Blog",
-    url: "/blog",
+    title: "Questions",
+    url: "/questions",
   },
   {
-    title: "Catégories",
-    url: "/category",
-  },
+    title: "Topics",
+    url: "/topics",
+  }
 ];
 
 export function getSidebarNavItems(): NavItem[] {

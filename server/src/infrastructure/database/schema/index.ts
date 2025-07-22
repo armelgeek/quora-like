@@ -12,7 +12,7 @@ export {
   users,
   verifications
 } from './auth'
-
+export * from './quora.schema'
 export const userRolesRelations = relations(userRoles, ({ one }) => ({
   user: one(roles, {
     fields: [userRoles.userId],
@@ -23,7 +23,6 @@ export const userRolesRelations = relations(userRoles, ({ one }) => ({
     references: [roles.id]
   })
 }))
-
 
 export type Role = InferModel<typeof roles>
 export type UserRole = InferModel<typeof userRoles>

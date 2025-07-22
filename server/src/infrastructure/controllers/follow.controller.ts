@@ -118,10 +118,10 @@ export class FollowController implements Routes {
         }
       }),
       async (c: any) => {
-        const userId = c.get('user')
-        if (!userId) return c.json({ success: false, error: 'Unauthorized' })
+        const user = c.get('user')
+        if (!user) return c.json({ success: false, error: 'Unauthorized' })
         const input = await c.req.json()
-        const result = await createFollow.execute({ ...input, userId })
+        const result = await createFollow.execute({ ...input, userId: user.id })
         return c.json(result, 201)
       }
     )
@@ -150,8 +150,8 @@ export class FollowController implements Routes {
         }
       }),
       async (c: any) => {
-        const userId = c.get('user')
-        if (!userId) return c.json({ success: false, error: 'Unauthorized' })
+        const user = c.get('user')
+        if (!user) return c.json({ success: false, error: 'Unauthorized' })
         const { id } = c.req.param()
         const follow = await findFollow.execute(id)
         if (!follow.success || !follow.data) {
