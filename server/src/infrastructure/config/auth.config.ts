@@ -36,7 +36,8 @@ export const auth = betterAuth({
     additionalFields: {
       firstname: { type: 'string', default: '', returned: true },
       lastname: { type: 'string', default: '', returned: true },
-      isAdmin: { type: 'boolean', default: false, returned: true }
+      isAdmin: { type: 'boolean', default: false, returned: true },
+      bio: { type: 'string', default: '', returned: true }
     },
     changeEmail: {
       enabled: true,
