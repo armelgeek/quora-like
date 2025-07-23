@@ -6,13 +6,13 @@ type EnrichedQuestion = Question & { user: any | null; topic: Topic | null; answ
 export class FindAllQuestionsUseCase {
   constructor(private readonly questionRepository: QuestionRepositoryInterface) {}
 
-  async execute(pagination: { skip: number; limit: number }): Promise<{
+  async execute(pagination: { skip: number; limit: number; sort?: string }): Promise<{
     success: boolean
     data: EnrichedQuestion[]
     error?: string
   }> {
     try {
-      const questions = await this.questionRepository.findAll(pagination)
+  const questions = await this.questionRepository.findAll(pagination)
       return {
         success: true,
         data: questions.map((q) => ({

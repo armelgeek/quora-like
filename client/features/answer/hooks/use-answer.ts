@@ -1,3 +1,27 @@
+export function useAnswerHistory(questionId: string) {
+  return useQuery<
+    { user: { name?: string; firstname?: string; lastname?: string; email?: string } | null; body: string; createdAt: string }[]
+  >({
+    queryKey: ['answer-history', questionId],
+    queryFn: async () => {
+      const res = await answerService.list({ questionId })
+      // Map to history format
+      return (res.data as Answer[]).map(a => ({
+        user: a.user
+          ? {
+              name: a.user.name ?? undefined,
+              firstname: a.user.firstname ?? undefined,
+              lastname: a.user.lastname ?? undefined,
+              email: a.user.email ?? undefined
+            }
+          : null,
+        body: a.body,
+        createdAt: typeof a.createdAt === 'string' ? a.createdAt : a.createdAt.toISOString()
+      }))
+    },
+    enabled: !!questionId
+  })
+}
 
   import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
     import { answerService } from '../answer.service'

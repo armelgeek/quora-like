@@ -45,14 +45,22 @@ export const CLIENT_MENU_ITEMS: NavItem[] = [
   {
     title: "Accueil",
     url: "/",
+    icon: "home",
   },
   {
     title: "Questions",
     url: "/questions",
+    icon: "post",
   },
   {
     title: "Topics",
     url: "/topics",
+    icon: "topic",
+  },
+  {
+    title: "Notification",
+    url: "/notifications",
+    icon: "notification",
   }
 ];
 

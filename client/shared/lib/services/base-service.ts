@@ -1,3 +1,4 @@
+
 /**
  * Service de base pour les appels HTTP
  * Centralise la logique de fetch avec gestion d'erreurs et configuration commune
@@ -22,6 +23,7 @@ export interface ApiError {
 }
 
 export class BaseService {
+
   private baseUrl: string;
   private defaultHeaders: Record<string, string>;
 
@@ -122,31 +124,7 @@ export class BaseService {
     }
   }
 
-  /**
-   * GET request
-   */
-  async get<T>(endpoint: string, params?: Record<string, string>): Promise<ApiResponse<T>> {
-    let url = endpoint;
-    if (params) {
-      // Filtrer les clés dont la valeur est undefined, null ou chaîne vide
-      const filteredParams: Record<string, string> = {};
-      Object.entries(params).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          filteredParams[key] = value;
-        }
-      });
-      const searchParams = new URLSearchParams(filteredParams);
-      if (searchParams.toString()) {
-        url += (url.includes('?') ? '&' : '?') + searchParams.toString();
-      }
-    }
-    const response = await this.request<T>(url, { method: 'GET' });
-    // Toujours retourner un objet avec la clé data (jamais un tableau brut)
-    if (!('data' in response)) {
-      return { data: response as unknown as T };
-    }
-    return response;
-  }
+  
 
   /**
    * POST request
@@ -223,6 +201,10 @@ export class BaseService {
       query = `?${search.toString()}`;
     }
     return this.request(query ? query : '');
+  }
+
+  public async get<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
+    return this.request<T>(endpoint, { ...options, method: 'GET' })
   }
 }
 

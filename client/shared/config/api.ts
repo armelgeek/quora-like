@@ -10,7 +10,8 @@ export const API_ENDPOINTS = {
     list: '/v1/questions',
     detail: (id: string) => `/v1/questions/${id}`,
     update: (id: string) => `/v1/questions/${id}`,
-    delete: (id: string) => `/v1/questions/${id}`
+    delete: (id: string) => `/v1/questions/${id}`,
+    stats: '/v1/questions/stats'
   },
   topic: {
     base: '/v1/topics',

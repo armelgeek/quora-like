@@ -7,7 +7,6 @@ import type { QuestionRepositoryInterface } from '@/domain/repositories/question
 import { db } from '../database/db/index'
 import { users } from '../database/schema'
 import { answers, questions, questionTags, tags, topics, votes } from '../database/schema/quora.schema'
-
 import { VoteRepository } from './vote.repository'
 
 export class QuestionRepository implements QuestionRepositoryInterface {
@@ -61,7 +60,7 @@ export class QuestionRepository implements QuestionRepositoryInterface {
     )
   }
 
-  async findAll(pagination?: { skip: number; limit: number }): Promise<
+  async findAll(pagination?: { skip: number; limit: number; sort?: string }): Promise<
     (Question & {
       user: UserType | null
       topic: Topic | null
@@ -70,7 +69,14 @@ export class QuestionRepository implements QuestionRepositoryInterface {
       tags: Tag[]
     })[]
   > {
-    const { skip = 0, limit = 20 } = pagination || {}
+    const { skip = 0, limit = 20, sort = 'recent' } = pagination || {}
+    // Tri SQL natif pour les modes simples, JS pour les autres
+    let orderBySql = sql`questions.created_at DESC`
+    if (sort === 'most-answered') {
+      orderBySql = sql`answers_count DESC, questions.created_at DESC`
+    } else if (sort === 'bump') {
+      orderBySql = sql`questions.updated_at DESC`
+    }
     const results = await db
       .select({
         question: questions,
@@ -83,16 +89,20 @@ export class QuestionRepository implements QuestionRepositoryInterface {
       .from(questions)
       .leftJoin(users, eq(questions.userId, users.id))
       .leftJoin(topics, eq(questions.topicId, topics.id))
+      .orderBy(orderBySql)
       .offset(skip)
       .limit(limit)
-
+    // JS filter pour no-answer
+    let filtered = results
+    if (sort === 'no-answer') {
+      filtered = results.filter((r) => Number(r.answersCount) === 0)
+    }
     const voteRepository = new VoteRepository()
     const votesCounts: number[] = await Promise.all(
-      results.map((row) => voteRepository.getVoteCountByQuestion(row.question.id))
+      filtered.map((row) => voteRepository.getVoteCountByQuestion(row.question.id))
     )
-
-    return await Promise.all(
-      results.map(async (row, i) => {
+    let enriched = await Promise.all(
+      filtered.map(async (row, i) => {
         const base = await this.mapWithUserTopic({
           question: row.question,
           user: row.user,
@@ -106,6 +116,12 @@ export class QuestionRepository implements QuestionRepositoryInterface {
         }
       })
     )
+    if (sort === 'most-voted') {
+      enriched = enriched.sort((a, b) => b.votesCount - a.votesCount)
+    } else if (sort === 'populaire') {
+      enriched = enriched.sort((a, b) => b.votesCount + b.answersCount - (a.votesCount + a.answersCount))
+    }
+    return enriched
   }
 
   private mapWithUserTopicAndCounts = async (row: {
@@ -347,6 +363,54 @@ export class QuestionRepository implements QuestionRepositoryInterface {
           }
         : null,
       tags: tagRows.map((t) => ({ ...t.tag }))
+    }
+  }
+
+  public async getStats() {
+    // Total questions
+    const [{ count: totalQuestions }] = await db.select({ count: sql`COUNT(*)` }).from(questions)
+    // Total answers
+    const [{ count: totalAnswers }] = await db.select({ count: sql`COUNT(*)` }).from(answers)
+    // Total votes
+    const [{ count: totalVotes }] = await db.select({ count: sql`COUNT(*)` }).from(votes)
+    // Questions sans réponse
+    const [{ count: noAnswer }] = await db
+      .select({ count: sql`COUNT(*)` })
+      .from(questions)
+      .leftJoin(answers, eq(questions.id, answers.questionId))
+      .where(sql`answers.id IS NULL`)
+    // Populaires (votes + réponses >= 5)
+    const popRows = await db
+      .select({ id: questions.id })
+      .from(questions)
+      .leftJoin(answers, eq(questions.id, answers.questionId))
+    const voteRepo = new VoteRepository()
+    let popular = 0
+    for (const row of popRows) {
+      const votes = await voteRepo.getVoteCountByQuestion(row.id)
+      const ansCount = await db
+        .select({ count: sql`COUNT(*)` })
+        .from(answers)
+        .where(eq(answers.questionId, row.id))
+      if (votes + Number(ansCount[0]?.count || 0) >= 5) popular++
+    }
+    // Par type
+    const [{ count: classic }] = await db
+      .select({ count: sql`COUNT(*)` })
+      .from(questions)
+      .where(eq(questions.type, 'classic'))
+    const [{ count: poll }] = await db
+      .select({ count: sql`COUNT(*)` })
+      .from(questions)
+      .where(eq(questions.type, 'poll'))
+    return {
+      totalQuestions: Number(totalQuestions),
+      totalAnswers: Number(totalAnswers),
+      totalVotes: Number(totalVotes),
+      noAnswer: Number(noAnswer),
+      popular,
+      classic: Number(classic),
+      poll: Number(poll)
     }
   }
 }

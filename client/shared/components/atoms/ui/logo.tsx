@@ -34,38 +34,34 @@ const Logo = React.forwardRef<HTMLDivElement, LogoProps>(
 
     const LogoIcon = ({ className: iconClassName }: { className?: string }) => (
       <div className={cn(
-        "relative flex items-center justify-center rounded-lg",
-        theme === 'color' && "bg-gradient-to-br from-primary to-primary-dark",
-        theme === 'light' && "bg-white/20 backdrop-blur-sm",
-        theme === 'dark' && "bg-gray-900/10",
+        "relative flex items-center justify-center rounded-lg bg-white",
         iconClassName
       )}>
-        {/* Icône de transport stylisée */}
+        {/* Q stylisé */}
         <svg
-          viewBox="0 0 24 24"
-          className={cn(
-            "relative z-10",
-            theme === 'color' && "text-white",
-            theme === 'light' && "text-white",
-            theme === 'dark' && "text-gray-900",
-            size === 'xs' && "w-3 h-3",
-            size === 'sm' && "w-4 h-4",
-            size === 'md' && "w-5 h-5",
-            size === 'lg' && "w-6 h-6",
-            size === 'xl' && "w-8 h-8"
-          )}
-          fill="currentColor"
+          viewBox="0 0 40 40"
+          className="w-full h-full"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
         >
-          {/* Bus/Transport icon */}
-          <path d="M4 16c0 .88.39 1.67 1 2.22V20a1 1 0 001 1h1a1 1 0 001-1v-1h8v1a1 1 0 001 1h1a1 1 0 001-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10z"/>
-          <circle cx="7.5" cy="16.5" r="1.5"/>
-          <circle cx="16.5" cy="16.5" r="1.5"/>
-          <path d="M4 6h16v6H4z" opacity="0.7"/>
-          <path d="M6 8h3v2H6zm5 0h3v2h-3zm5 0h2v2h-2z" opacity="0.5"/>
+          <circle cx="20" cy="20" r="18" fill="#310ba2" />
+          <text
+            x="50%"
+            y="54%"
+            textAnchor="middle"
+            dominantBaseline="middle"
+            fontFamily="serif"
+            fontWeight="bold"
+            fontSize="20"
+            fill="white"
+          >Q</text>
+          <path
+            d="M28 28 L34 34"
+            stroke="white"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
         </svg>
-        
-        {/* Effet de brillance */}
-        <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent rounded-lg" />
       </div>
     );
 
@@ -73,10 +69,10 @@ const Logo = React.forwardRef<HTMLDivElement, LogoProps>(
       <span className={cn(
         "font-bold tracking-tight",
         textSizeClasses[size],
-        themeClasses[theme],
+        theme === 'color' ? "text-[#310ba2]" : themeClasses[theme],
         textClassName
       )}>
-        Boiler
+        Quora<span className="font-normal text-gray-500">Like</span>
       </span>
     );
 
@@ -85,7 +81,7 @@ const Logo = React.forwardRef<HTMLDivElement, LogoProps>(
         "text-xs font-medium tracking-wide opacity-70",
         themeClasses[theme]
       )}>
-        Transport & Voyage
+        Questions & Reponses
       </span>
     );
 

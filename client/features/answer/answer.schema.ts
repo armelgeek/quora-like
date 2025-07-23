@@ -18,13 +18,16 @@ export type UserType = {
   email?: string | null
   emailVerified?: string | null
   image?: string | null
+  avatarUrl?: string | null // alias for image, for UI compatibility
   isAdmin?: boolean
   createdAt?: string | Date | null
   updatedAt?: string | Date | null
 }
 
+import type { Question } from '@/features/question/question.schema';
 export type Answer = z.infer<typeof AnswerSchema> & {
   user?: UserType | null
   votesCount?: number
+  question?: Question | null
 }
 export type AnswerPayload = Pick<Answer, 'body' | 'questionId' | 'userId' | 'parentAnswerId'>

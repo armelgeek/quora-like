@@ -36,7 +36,8 @@ export class QuestionController implements Routes {
         request: {
           query: z.object({
             skip: z.string().optional(),
-            limit: z.string().optional()
+            limit: z.string().optional(),
+            sort: z.enum(['recent', 'most-answered', 'bump', 'most-voted', 'no-answer', 'populaire']).optional()
           })
         },
         responses: {
@@ -54,9 +55,42 @@ export class QuestionController implements Routes {
         }
       }),
       async (c) => {
-        const { skip = '0', limit = '20' } = c.req.query()
-        const result = await findAllQuestions.execute({ skip: Number(skip), limit: Number(limit) })
+        const { skip = '0', limit = '20', sort = 'recent' } = c.req.query()
+        const result = await findAllQuestions.execute({ skip: Number(skip), limit: Number(limit), sort })
         return c.json(result)
+      }
+    )
+    this.controller.openapi(
+      createRoute({
+        method: 'get',
+        path: '/v1/questions/stats',
+        tags: ['Questions'],
+        summary: 'Get question statistics',
+        responses: {
+          200: {
+            description: 'Statistics',
+            content: {
+              'application/json': {
+                schema: z.object({
+                  success: z.boolean(),
+                  data: z.object({
+                    totalQuestions: z.number(),
+                    totalAnswers: z.number(),
+                    totalVotes: z.number(),
+                    noAnswer: z.number(),
+                    popular: z.number(),
+                    classic: z.number(),
+                    poll: z.number()
+                  })
+                })
+              }
+            }
+          }
+        }
+      }),
+      async (c: any) => {
+        const stats = await questionRepositoryInst.getStats()
+        return c.json({ success: true, data: stats })
       }
     )
 
@@ -128,7 +162,7 @@ export class QuestionController implements Routes {
         const user = c.get('user')
         if (!user) return c.json({ success: false, error: 'Unauthorized' })
         const input = await c.req.json()
-  const result = await createQuestion.execute({ ...input, userId: user.id })
+        const result = await createQuestion.execute({ ...input, userId: user.id })
         return c.json(result, 201)
       }
     )
@@ -217,5 +251,6 @@ export class QuestionController implements Routes {
         return c.json(result)
       }
     )
+    
   }
 }

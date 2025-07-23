@@ -1,4 +1,4 @@
-import { Car, Plane, Route } from 'lucide-react';
+import { Bell, Car, Home, Plane, Route } from 'lucide-react';
 import {
   AlertTriangle,
   ArrowRight,
@@ -41,6 +41,8 @@ export const Icons = {
   logo: Command,
   login: LogIn,
   close: X,
+  home: Home,
+  topic: LayoutDashboardIcon,
   product: LucideShoppingBag,
   spinner: Loader2,
   kanban: CircuitBoardIcon,
@@ -65,6 +67,8 @@ export const Icons = {
   sun: SunMedium,
   moon: Moon,
   laptop: Laptop,
+  notification: Bell,
+
   gitHub: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden='true'
