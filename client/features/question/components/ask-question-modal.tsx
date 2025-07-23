@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { InputTag } from '@/shared/components/atoms/inputs/input-tag'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useCreateQuestion } from '../hooks/use-question'
@@ -19,10 +20,12 @@ import {
   SelectValue
 } from '@/shared/components/atoms/ui/select'
 
+
 const askQuestionSchema = z.object({
   title: z.string().min(10, 'La question doit contenir au moins 10 caractères'),
   details: z.string().optional(),
   topicId: z.string().min(1, 'Veuillez sélectionner un topic'),
+  tags: z.array(z.string()).max(5, 'Maximum 5 tags').optional(),
   anonymous: z.boolean().optional()
 })
 
@@ -36,25 +39,31 @@ export function AskQuestionModal() {
   const [newTopic, setNewTopic] = useState('')
   const [creating, setCreating] = useState(false)
 
+
   const {
     register,
     handleSubmit,
     formState: { errors, isValid },
     reset,
     setValue,
+    watch,
   } = useForm<AskQuestionForm>({
     resolver: zodResolver(askQuestionSchema),
     mode: 'onChange',
-    defaultValues: { anonymous: false }
+    defaultValues: { anonymous: false, tags: [] }
   })
 
+  const tags = watch('tags') || []
+
   // const { data: suggestions } = useQuestionSuggestions(watch('title')) // à créer si besoin
+
 
   const onSubmit = (data: AskQuestionForm) => {
     const payload = {
       title: data.title,
       body: data.details || '',
       topicId: data.topicId,
+      tags: data.tags || [],
     }
     createQuestion(payload, {
       onSuccess: () => {
@@ -84,7 +93,7 @@ export function AskQuestionModal() {
       </DialogTrigger>
       <DialogContent>
         <DialogTitle>Poser une question</DialogTitle>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+  <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Input
             placeholder="Ex: Comment fonctionne Quora ?"
             {...register('title')}
@@ -148,6 +157,16 @@ export function AskQuestionModal() {
                 </Button>
               </div>
             )}
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Tags</label>
+            <InputTag
+              value={tags}
+              onChange={tagsArr => setValue('tags', tagsArr)}
+              placeholder="Ajouter des tags (max 5)"
+              maxTags={5}
+            />
+            {errors.tags && <div className="text-xs text-red-500">{errors.tags.message as string}</div>}
           </div>
           <label className="flex items-center gap-2">
             <input type="checkbox" {...register('anonymous')} />

@@ -103,7 +103,8 @@ export class QuestionController implements Routes {
                 schema: z.object({
                   title: z.string(),
                   body: z.string(),
-                  topicId: z.string()
+                  topicId: z.string(),
+                  tags: z.array(z.object({ id: z.string().optional(), name: z.string() })).optional()
                 })
               }
             }
@@ -127,7 +128,7 @@ export class QuestionController implements Routes {
         const user = c.get('user')
         if (!user) return c.json({ success: false, error: 'Unauthorized' })
         const input = await c.req.json()
-        const result = await createQuestion.execute({ ...input, userId: user.id })
+  const result = await createQuestion.execute({ ...input, userId: user.id })
         return c.json(result, 201)
       }
     )
@@ -146,7 +147,8 @@ export class QuestionController implements Routes {
                 schema: z.object({
                   title: z.string().optional(),
                   body: z.string().optional(),
-                  topicId: z.string().optional()
+                  topicId: z.string().optional(),
+                  tags: z.array(z.object({ id: z.string().optional(), name: z.string() })).optional()
                 })
               }
             }

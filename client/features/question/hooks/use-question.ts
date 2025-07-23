@@ -2,6 +2,13 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { questionService } from '../question.service'
 import type { Question } from '../question.schema'
 
+export type CreateQuestionPayload = {
+  title: string
+  body: string
+  topicId: string
+  tags?: { name: string }[]
+}
+
 export function useQuestions(params?: Record<string, string | number | boolean>) {
   // Cast params en Record<string, string> pour l'appel
   const stringParams = params
@@ -16,7 +23,7 @@ export function useQuestions(params?: Record<string, string | number | boolean>)
 export function useCreateQuestion() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (data: Omit<Question, 'id' | 'createdAt' | 'updatedAt'>) => questionService.post('', data),
+    mutationFn: (data: CreateQuestionPayload) => questionService.post('', data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['questions'] })
   })
 }

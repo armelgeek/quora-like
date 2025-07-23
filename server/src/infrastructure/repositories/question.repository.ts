@@ -1,15 +1,17 @@
 import { eq, sql } from 'drizzle-orm'
 import type { Question } from '@/domain/models/question.model'
+import type { Tag } from '@/domain/models/tag.model'
 import type { Topic } from '@/domain/models/topic.model'
 import type { UserType } from '@/domain/models/user.model'
 import type { QuestionRepositoryInterface } from '@/domain/repositories/question.repository.interface'
 import { db } from '../database/db/index'
 import { users } from '../database/schema'
-import { answers, questions, topics, votes } from '../database/schema/quora.schema'
+import { answers, questions, questionTags, tags, topics, votes } from '../database/schema/quora.schema'
+
 import { VoteRepository } from './vote.repository'
 
 export class QuestionRepository implements QuestionRepositoryInterface {
-  async findById(id: string): Promise<(Question & { user: UserType | null; topic: Topic | null }) | null> {
+  async findById(id: string): Promise<(Question & { user: UserType | null; topic: Topic | null; tags: Tag[] }) | null> {
     const result = await db
       .select({
         question: questions,
@@ -22,15 +24,53 @@ export class QuestionRepository implements QuestionRepositoryInterface {
       .where(eq(questions.id, id))
       .limit(1)
     if (!result.length) return null
-    return this.mapWithUserTopic(result[0])
+    const base = await this.mapWithUserTopic(result[0])
+    const tagsRes = await db
+      .select({ tag: tags })
+      .from(questionTags)
+      .innerJoin(tags, eq(questionTags.tagId, tags.id))
+      .where(eq(questionTags.questionId, id))
+    return { ...base, tags: tagsRes.map((t) => ({ ...t.tag })) }
+  }
+  async findByTag(
+    tagId: string,
+    pagination?: { skip: number; limit: number }
+  ): Promise<(Question & { tags: Tag[] })[]> {
+    const { skip = 0, limit = 20 } = pagination || {}
+    const results = await db
+      .select({ question: questions })
+      .from(questionTags)
+      .innerJoin(questions, eq(questionTags.questionId, questions.id))
+      .where(eq(questionTags.tagId, tagId))
+      .offset(skip)
+      .limit(limit)
+    // Pour chaque question, enrichir avec les tags
+    return await Promise.all(
+      results.map(async (r) => {
+        const tagRows = await db
+          .select({ tag: tags })
+          .from(questionTags)
+          .innerJoin(tags, eq(questionTags.tagId, tags.id))
+          .where(eq(questionTags.questionId, r.question.id))
+        // Ensure type is "text" | "poll"
+        const type: 'text' | 'poll' = r.question.type === 'poll' ? 'poll' : 'text'
+        // topicId must be undefined if null to match type
+        const topicId = r.question.topicId === null ? undefined : r.question.topicId
+        return { ...r.question, type, tags: tagRows.map((t) => ({ ...t.tag })), topicId }
+      })
+    )
   }
 
-  async findAll(pagination?: {
-    skip: number
-    limit: number
-  }): Promise<(Question & { user: UserType | null; topic: Topic | null; answersCount: number; votesCount: number })[]> {
+  async findAll(pagination?: { skip: number; limit: number }): Promise<
+    (Question & {
+      user: UserType | null
+      topic: Topic | null
+      answersCount: number
+      votesCount: number
+      tags: Tag[]
+    })[]
+  > {
     const { skip = 0, limit = 20 } = pagination || {}
-    // On récupère les questions avec user, topic, answersCount
     const results = await db
       .select({
         question: questions,
@@ -51,28 +91,39 @@ export class QuestionRepository implements QuestionRepositoryInterface {
       results.map((row) => voteRepository.getVoteCountByQuestion(row.question.id))
     )
 
-    return results.map((row, i) => {
-      const base = this.mapWithUserTopic({
-        question: row.question,
-        user: row.user,
-        topic: row.topic
+    return await Promise.all(
+      results.map(async (row, i) => {
+        const base = await this.mapWithUserTopic({
+          question: row.question,
+          user: row.user,
+          topic: row.topic
+        })
+        return {
+          ...base,
+          answersCount: Number(row.answersCount ?? 0),
+          votesCount: voteRepository ? votesCounts[i] : 0,
+          tags: base.tags || []
+        }
       })
-      return {
-        ...base,
-        answersCount: Number(row.answersCount ?? 0),
-        votesCount: voteRepository ? votesCounts[i] : 0
-      }
-    })
+    )
   }
 
-  private mapWithUserTopicAndCounts = (row: {
+  private mapWithUserTopicAndCounts = async (row: {
     question: any
     user: any
     topic: any
     answersCount: any
     votesCount: any
-  }): Question & { user: UserType | null; topic: Topic | null; answersCount: number; votesCount: number } => {
-    const base = this.mapWithUserTopic(row)
+  }): Promise<
+    Question & {
+      user: UserType | null
+      topic: Topic | null
+      answersCount: number
+      votesCount: number
+      tags: Tag[]
+    }
+  > => {
+    const base = await this.mapWithUserTopic(row)
     return {
       ...base,
       answersCount: Number(row.answersCount ?? 0),
@@ -83,14 +134,36 @@ export class QuestionRepository implements QuestionRepositoryInterface {
   async create(data: Omit<Question, 'id' | 'createdAt' | 'updatedAt'>): Promise<Question> {
     const id = crypto.randomUUID()
     const now = new Date()
-    await db.insert(questions).values({ ...data, id, createdAt: now, updatedAt: now })
-    return { ...data, id, createdAt: now, updatedAt: now }
+    const { tags: tagsInput = [], ...rest } = data as any
+    await db.insert(questions).values({ ...rest, id, createdAt: now, updatedAt: now })
+    // Gestion des tags (création si besoin, liaison)
+    for (const tag of tagsInput) {
+      let tagId = tag.id
+      if (!tagId) {
+        // Création du tag si pas d'id
+        tagId = crypto.randomUUID()
+        await db.insert(tags).values({ id: tagId, name: tag.name, createdAt: now })
+      }
+      await db.insert(questionTags).values({ questionId: id, tagId })
+    }
+    // Retourne la question enrichie
+    const created = await this.findById(id)
+    if (!created) throw new Error('Erreur création question')
+    return created
+  }
+  async findTags(questionId: string): Promise<string[]> {
+    const tagRows = await db
+      .select({ tag: tags })
+      .from(questionTags)
+      .innerJoin(tags, eq(questionTags.tagId, tags.id))
+      .where(eq(questionTags.questionId, questionId))
+    return tagRows.map((t) => t.tag.name)
   }
 
   async update(
     id: string,
     data: Partial<Omit<Question, 'id' | 'createdAt' | 'updatedAt'>>
-  ): Promise<Question & { user: UserType | null; topic: Topic | null }> {
+  ): Promise<Question & { user: UserType | null; topic: Topic | null; tags: Tag[] }> {
     const now = new Date()
     await db
       .update(questions)
@@ -108,7 +181,7 @@ export class QuestionRepository implements QuestionRepositoryInterface {
       .where(eq(questions.id, id))
       .limit(1)
     if (!result.length) throw new Error('Question not found')
-    return this.mapWithUserTopic(result[0])
+    return await this.mapWithUserTopic(result[0])
   }
 
   async delete(id: string): Promise<boolean> {
@@ -120,7 +193,7 @@ export class QuestionRepository implements QuestionRepositoryInterface {
   async findByUser(
     userId: string,
     pagination?: { skip: number; limit: number }
-  ): Promise<(Question & { user: UserType | null; topic: Topic | null })[]> {
+  ): Promise<(Question & { user: UserType | null; topic: Topic | null; tags: Tag[] })[]> {
     const { skip = 0, limit = 20 } = pagination || {}
     const results = await db
       .select({
@@ -134,13 +207,25 @@ export class QuestionRepository implements QuestionRepositoryInterface {
       .where(eq(questions.userId, userId))
       .offset(skip)
       .limit(limit)
-    return results.map(this.mapWithUserTopic)
+    return await Promise.all(
+      results.map(async (row) => {
+        const base = await this.mapWithUserTopic({
+          question: row.question,
+          user: row.user,
+          topic: row.topic
+        })
+        return {
+          ...base,
+          tags: base.tags || []
+        }
+      })
+    )
   }
 
   async findByTopic(
     topicId: string,
     pagination?: { skip: number; limit: number }
-  ): Promise<(Question & { user: UserType | null; topic: Topic | null })[]> {
+  ): Promise<(Question & { user: UserType | null; topic: Topic | null; tags: Tag[] })[]> {
     const { skip = 0, limit = 20 } = pagination || {}
     const results = await db
       .select({
@@ -154,13 +239,25 @@ export class QuestionRepository implements QuestionRepositoryInterface {
       .where(eq(questions.topicId, topicId))
       .offset(skip)
       .limit(limit)
-    return results.map(this.mapWithUserTopic)
+    return await Promise.all(
+      results.map(async (row) => {
+        const base = await this.mapWithUserTopic({
+          question: row.question,
+          user: row.user,
+          topic: row.topic
+        })
+        return {
+          ...base,
+          tags: base.tags || []
+        }
+      })
+    )
   }
 
   async getFeed(
     type: 'recent' | 'popular',
     pagination?: { skip: number; limit: number }
-  ): Promise<(Question & { user: UserType | null; topic: Topic | null })[]> {
+  ): Promise<(Question & { user: UserType | null; topic: Topic | null; tags: Tag[] })[]> {
     const { skip = 0, limit = 20 } = pagination || {}
     let results
     if (type === 'recent') {
@@ -177,7 +274,6 @@ export class QuestionRepository implements QuestionRepositoryInterface {
         .offset(skip)
         .limit(limit)
     } else {
-      // Pour 'popular', il faudrait un champ de popularité ou un join avec votes
       results = await db
         .select({
           question: questions,
@@ -190,17 +286,35 @@ export class QuestionRepository implements QuestionRepositoryInterface {
         .offset(skip)
         .limit(limit)
     }
-    return results.map(this.mapWithUserTopic)
+    return await Promise.all(
+      results.map(async (row) => {
+        const base = await this.mapWithUserTopic({
+          question: row.question,
+          user: row.user,
+          topic: row.topic
+        })
+        return {
+          ...base,
+          tags: base.tags || []
+        }
+      })
+    )
   }
 
-  private mapWithUserTopic(row: {
+  private async mapWithUserTopic(row: {
     question: any
     user: any
     topic: any
-  }): Question & { user: UserType | null; topic: Topic | null } {
+  }): Promise<Question & { user: UserType | null; topic: Topic | null; tags: Tag[] }> {
     const q = row.question
     const u = row.user
     const t = row.topic
+    // Fetch tags for this question
+    const tagRows = await db
+      .select({ tag: tags })
+      .from(questionTags)
+      .innerJoin(tags, eq(questionTags.tagId, tags.id))
+      .where(eq(questionTags.questionId, q.id))
     return {
       id: q.id,
       title: q.title,
@@ -231,7 +345,8 @@ export class QuestionRepository implements QuestionRepositoryInterface {
             description: t.description,
             createdAt: t.createdAt ?? t.created_at
           }
-        : null
+        : null,
+      tags: tagRows.map((t) => ({ ...t.tag }))
     }
   }
 }

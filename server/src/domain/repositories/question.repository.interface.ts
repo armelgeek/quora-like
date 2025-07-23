@@ -9,4 +9,6 @@ export interface QuestionRepositoryInterface {
   findByUser: (userId: string, pagination?: { skip: number; limit: number }) => Promise<Question[]>
   findByTopic: (topicId: string, pagination?: { skip: number; limit: number }) => Promise<Question[]>
   getFeed: (type: 'recent' | 'popular', pagination?: { skip: number; limit: number }) => Promise<Question[]>
+  findByTag: (tagId: string, pagination?: { skip: number; limit: number }) => Promise<Question[]>
+  findTags: (questionId: string) => Promise<string[]>
 }

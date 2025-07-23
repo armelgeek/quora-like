@@ -1,6 +1,27 @@
 import { integer, pgTable, primaryKey, text, timestamp } from 'drizzle-orm/pg-core'
 import { users } from './auth'
 
+export const tags = pgTable('tags', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull().unique(),
+  createdAt: timestamp('created_at').defaultNow().notNull()
+})
+
+export const questionTags = pgTable(
+  'question_tags',
+  {
+    questionId: text('question_id')
+      .notNull()
+      .references(() => questions.id, { onDelete: 'cascade' }),
+    tagId: text('tag_id')
+      .notNull()
+      .references(() => tags.id, { onDelete: 'cascade' })
+  },
+  (table) => ({
+    pk: primaryKey({ columns: [table.questionId, table.tagId] })
+  })
+)
+
 export const topics = pgTable('topics', {
   id: text('id').primaryKey(),
   name: text('name').notNull().unique(),

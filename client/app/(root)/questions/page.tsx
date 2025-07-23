@@ -1,6 +1,6 @@
 "use client"
 
-import Link from 'next/link'
+
 import { useQuestions } from '@/features/question/hooks/use-question'
 import { useVote } from '@/features/vote/hooks/use-vote'
 import { useState } from 'react'
@@ -40,6 +40,13 @@ export default function QuestionsFeedPage() {
                                     <span className="text-xs text-green-600 ml-2">
                                         {typeof q.votesCount === 'number' ? `${q.votesCount} vote${q.votesCount > 1 ? 's' : ''}` : ''}
                                     </span>
+                                    {Array.isArray(q.tags) && q.tags.length > 0 && (
+                                        <span className="flex flex-wrap gap-1 ml-2">
+                                            {q.tags.map((tag: { id: string; name: string }) => (
+                                                <Badge key={tag.id} variant="secondary" className="text-xs">{tag.name}</Badge>
+                                            ))}
+                                        </span>
+                                    )}
                                     <button
                                         aria-label="Upvote"
                                         className="ml-2 px-2 py-1 rounded bg-green-100 text-green-700 hover:bg-green-200"

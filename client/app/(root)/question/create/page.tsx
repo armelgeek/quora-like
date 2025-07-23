@@ -10,7 +10,9 @@ import { useCreateTopic } from '@/features/topic/hooks/use-topic'
 import { Button } from '@/shared/components/atoms/ui/button'
 import { Input } from '@/shared/components/atoms/ui/input'
 import { Textarea } from '@/shared/components/atoms/ui/textarea'
+
 import { Badge } from '@/shared/components/atoms/ui/badge'
+import { InputTag } from '@/shared/components/atoms/inputs/input-tag'
 
 
 const pollOptionSchema = z.object({
@@ -18,10 +20,12 @@ const pollOptionSchema = z.object({
 })
 
 
+
 const askQuestionSchema = z.object({
   title: z.string().min(10, 'La question doit contenir au moins 10 caractères'),
   details: z.string().optional(),
   topicId: z.string().min(1, 'Sélectionnez un topic'),
+  tags: z.array(z.string()).max(5, 'Maximum 5 tags').optional(),
   anonymous: z.boolean().optional(),
   type: z.enum(['classic', 'poll']).default('classic'),
   pollOptions: z.array(pollOptionSchema).optional()
@@ -54,11 +58,14 @@ export default function CreateQuestionPage() {
     reset,
     setValue,
     watch,
+
   } = useForm<AskQuestionForm>({
     resolver: zodResolver(askQuestionSchema),
     mode: 'onChange',
-    defaultValues: { anonymous: false, topicId: '', type: 'classic', pollOptions: [{ value: '' }, { value: '' }] }
+    defaultValues: { anonymous: false, topicId: '', type: 'classic', pollOptions: [{ value: '' }, { value: '' }], tags: [] }
   })
+
+  const tags = watch('tags') || []
 
   const type = watch('type')
   const pollOptions = watch('pollOptions') || []
@@ -71,12 +78,14 @@ export default function CreateQuestionPage() {
       anonymous?: boolean;
       type: 'classic' | 'poll';
       pollOptions?: { value: string }[];
+      tags?: { name: string }[];
     } = {
       title: data.title,
       body: data.details || '',
       topicId: data.topicId,
       anonymous: data.anonymous,
       type: data.type,
+      tags: (data.tags || []).map((tag) => ({ name: tag })),
     }
     if (data.type === 'poll') {
       payload.pollOptions = (data.pollOptions || []).map((opt: { value: string }) => ({ value: opt.value }))
@@ -190,6 +199,16 @@ export default function CreateQuestionPage() {
               </Button>
             </div>
           )}
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">Tags</label>
+          <InputTag
+            value={tags}
+            onChange={tagsArr => setValue('tags', tagsArr)}
+            placeholder="Ajouter des tags (max 5)"
+            maxTags={5}
+          />
+          {errors.tags && <div className="text-xs text-red-500">{errors.tags.message as string}</div>}
         </div>
         {type === 'poll' && (
           <div className="bg-gray-50 rounded p-4">
