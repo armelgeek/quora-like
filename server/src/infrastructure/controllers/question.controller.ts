@@ -6,14 +6,17 @@ import { FindAllQuestionsUseCase } from '@/application/use-cases/question/find-a
 import { FindQuestionUseCase } from '@/application/use-cases/question/find-question.use-case'
 import { UpdateQuestionUseCase } from '@/application/use-cases/question/update-question.use-case'
 import type { Routes } from '@/domain/types'
+
+import { PollRepository } from '../repositories/poll.repository'
 import { QuestionRepository } from '../repositories/question.repository'
 
-const questionRepository = new QuestionRepository()
-const createQuestion = new CreateQuestionUseCase(questionRepository)
-const findQuestion = new FindQuestionUseCase(questionRepository)
-const findAllQuestions = new FindAllQuestionsUseCase(questionRepository)
-const updateQuestion = new UpdateQuestionUseCase(questionRepository)
-const deleteQuestion = new DeleteQuestionUseCase(questionRepository)
+const questionRepositoryInst = new QuestionRepository()
+const pollRepositoryInst = new PollRepository()
+const createQuestion = new CreateQuestionUseCase(questionRepositoryInst, pollRepositoryInst)
+const findQuestion = new FindQuestionUseCase(questionRepositoryInst)
+const findAllQuestions = new FindAllQuestionsUseCase(questionRepositoryInst)
+const updateQuestion = new UpdateQuestionUseCase(questionRepositoryInst)
+const deleteQuestion = new DeleteQuestionUseCase(questionRepositoryInst)
 
 export class QuestionController implements Routes {
   public controller: OpenAPIHono

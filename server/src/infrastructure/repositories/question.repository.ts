@@ -209,6 +209,7 @@ export class QuestionRepository implements QuestionRepositoryInterface {
       topicId: q.topicId ?? q.topic_id,
       createdAt: q.createdAt ?? q.created_at,
       updatedAt: q.updatedAt ?? q.updated_at,
+      type: q.type ?? 'text',
       user: u
         ? {
             id: u.id,

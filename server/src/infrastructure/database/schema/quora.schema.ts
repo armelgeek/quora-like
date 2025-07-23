@@ -16,8 +16,27 @@ export const questions = pgTable('questions', {
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
   topicId: text('topic_id').references(() => topics.id, { onDelete: 'set null' }),
+  type: text('type').notNull().default('text'), // 'text' ou 'poll'
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull()
+})
+
+export const polls = pgTable('polls', {
+  id: text('id').primaryKey(),
+  questionId: text('question_id')
+    .notNull()
+    .references(() => questions.id, { onDelete: 'cascade' }),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull()
+})
+
+export const pollOptions = pgTable('poll_options', {
+  id: text('id').primaryKey(),
+  pollId: text('poll_id')
+    .notNull()
+    .references(() => polls.id, { onDelete: 'cascade' }),
+  text: text('text').notNull(),
+  votesCount: integer('votes_count').notNull().default(0)
 })
 
 export const answers = pgTable('answers', {

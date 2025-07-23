@@ -13,6 +13,7 @@ export {
   verifications
 } from './auth'
 export * from './quora.schema'
+export * from './poll-vote.schema'
 export const userRolesRelations = relations(userRoles, ({ one }) => ({
   user: one(roles, {
     fields: [userRoles.userId],

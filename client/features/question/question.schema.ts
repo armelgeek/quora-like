@@ -1,10 +1,12 @@
 import { z } from 'zod'
 
+
 export const questionSchema = z.object({
   id: z.string(),
   title: z.string().min(1),
   body: z.string().min(1),
   topicId: z.string(),
+  type: z.string().optional(),
   createdAt: z.string(),
   updatedAt: z.string()
 })

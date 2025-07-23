@@ -38,5 +38,10 @@ export const API_ENDPOINTS = {
     detail: (id: string) => `/v1/answers/${id}`,
     update: (id: string) => `/v1/answers/${id}`,
     delete: (id: string) => `/v1/answers/${id}`
+  },
+  poll: {
+    base: '/v1/polls',
+    vote: '/v1/polls/vote',
+    byQuestion: (questionId: string) => `/v1/polls?questionId=${questionId}`
   }
 };

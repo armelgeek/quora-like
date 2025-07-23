@@ -197,6 +197,7 @@ export class AnswerRepository implements AnswerRepositoryInterface {
             title: q.title,
             body: q.body,
             userId: q.userId ?? q.user_id,
+            type: q.type ?? 'text',
             topicId: q.topicId ?? q.topic_id,
             createdAt: q.createdAt ?? q.created_at,
             updatedAt: q.updatedAt ?? q.updated_at

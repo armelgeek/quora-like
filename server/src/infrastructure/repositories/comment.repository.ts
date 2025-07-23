@@ -181,6 +181,7 @@ export class CommentRepository implements CommentRepositoryInterface {
                   body: q.body,
                   userId: q.userId ?? q.user_id,
                   topicId: q.topicId ?? q.topic_id,
+                    type: q.type ?? 'text',
                   createdAt: q.createdAt ?? q.created_at,
                   updatedAt: q.updatedAt ?? q.updated_at
                 }
