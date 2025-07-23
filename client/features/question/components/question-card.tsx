@@ -22,6 +22,7 @@ export default function QuestionCard(props: QuestionCardProps) {
     const { q, idx, sort, session, upvoteQuestion, downvoteQuestion } = props;
     const [showOptions, setShowOptions] = useState(false);
     const [isFollowing, setIsFollowing] = useState(false);
+    const [showAnswers, setShowAnswers] = useState(false);
 
     const initials = (q.user?.name || q.user?.firstname || q.user?.email || '?')
         .split(' ')
@@ -146,7 +147,7 @@ export default function QuestionCard(props: QuestionCardProps) {
                 </div>
             )}
 
-            <div className="px-4 pb-3 flex items-center gap-4 text-sm">
+            <div className="px-4 py-3 flex items-center gap-4 text-sm">
                 <div className="flex items-center gap-1">
                     <button
                         className={`p-1.5 rounded-full hover:bg-green-50 transition-colors ${upvoteQuestion.isPending ? 'opacity-60' : ''
@@ -177,11 +178,15 @@ export default function QuestionCard(props: QuestionCardProps) {
                     </button>
                 </div>
 
-                <button className="flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-gray-100 text-gray-600 transition-colors">
+                <button
+                    className={`flex items-center gap-2 px-3 py-1.5 rounded-full hover:bg-gray-100 text-gray-600 transition-colors ${showAnswers ? 'bg-gray-100 font-semibold' : ''}`}
+                    onClick={() => setShowAnswers((v) => !v)}
+                    aria-expanded={showAnswers}
+                >
                     <svg width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                         <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
                     </svg>
-                    <span>Répondre</span>
+                    <span>{showAnswers ? 'Masquer' : 'Répondre'}</span>
                     {typeof q.answersCount === 'number' && q.answersCount > 0 && (
                         <span className="text-xs bg-gray-200 text-gray-700 px-1.5 py-0.5 rounded-full">
                             {q.answersCount}
@@ -216,12 +221,14 @@ export default function QuestionCard(props: QuestionCardProps) {
                 </button>
             </div>
 
-            <div className="border-t border-gray-100">
-                <AnswersList questionId={q.id} />
-                <div className="px-4 py-3 bg-gray-50/50">
-                    <AnswerForm questionId={q.id} />
+            {showAnswers && (
+                <div className="border-t border-gray-100">
+                    <AnswersList questionId={q.id} />
+                    <div className="px-4 py-3 bg-gray-50/50">
+                        <AnswerForm questionId={q.id} />
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
     );
 }

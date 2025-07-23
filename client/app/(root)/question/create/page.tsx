@@ -65,10 +65,9 @@ export default function CreateQuestionPage() {
     defaultValues: { anonymous: false, topicId: '', type: 'classic', pollOptions: [{ value: '' }, { value: '' }], tags: [] }
   })
 
-  const tags = watch('tags') || []
-
+  const tags = watch('tags') ?? []
   const type = watch('type')
-  const pollOptions = watch('pollOptions') || []
+  const pollOptions = watch('pollOptions') ?? []
 
   const onSubmit = (data: AskQuestionForm) => {
     const payload: {
@@ -104,19 +103,19 @@ export default function CreateQuestionPage() {
         setCreating(false)
         setNewTopic('')
         if (created && created.data && created.data.id) {
-          setValue('topicId', created.data.id)
+          setValue('topicId', created.data.id, { shouldValidate: true })
         }
       }
     })
   }
 
   const handleAddOption = () => {
-    setValue('pollOptions', [...pollOptions, { value: '' }])
+    setValue('pollOptions', [...pollOptions, { value: '' }], { shouldValidate: true })
   }
 
   const handleRemoveOption = (idx: number) => {
     if (pollOptions.length <= 2) return
-    setValue('pollOptions', pollOptions.filter((_, i: number) => i !== idx))
+    setValue('pollOptions', pollOptions.filter((_, i: number) => i !== idx), { shouldValidate: true })
   }
 
   return (
@@ -204,7 +203,7 @@ export default function CreateQuestionPage() {
           <label className="block text-sm font-medium mb-1">Tags</label>
           <InputTag
             value={tags}
-            onChange={tagsArr => setValue('tags', tagsArr)}
+            onChange={tagsArr => setValue('tags', tagsArr, { shouldValidate: true })}
             placeholder="Ajouter des tags (max 5)"
             maxTags={5}
           />
